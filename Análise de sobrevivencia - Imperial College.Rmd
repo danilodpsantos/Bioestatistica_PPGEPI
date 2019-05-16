@@ -1,0 +1,88 @@
+---
+title: "Análise de sobrevivência em R"
+author: "Danilo de Paula Santos"
+date: "15/05/2019"
+output: html_document
+---
+
+Carregando o R e os pacotes
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(haven)
+library(survival)
+library(ggplot2)
+library(sjlabelled)
+
+```
+
+
+Carregando o Dataset do curso e formatando para as análises
+
+```{r Banco}
+
+HES <- read.csv("/Users/danilodpsantos/Desktop/simulated HF mort data for GMPH (1K) final.csv")
+
+HES$gender <- factor(HES$gender)
+
+```
+
+Preparando a curva e plotando
+
+```{r Kaplan-Meier, echo=FALSE}
+
+KM_fit  <- survfit(Surv(HES$fu_time, HES$death) ~ 1)
+
+plot(KM_fit)
+```
+
+Avaliando os S(t) para tempos específicos
+
+``` {r Avaliação de S(t)}
+
+summary(KM_fit,
+        times = c(1:7, 30, 60, 90*(1:10)))
+
+```
+
+Separando a curva de acordo com alguma característica dos participantes, nesse caso sexo.
+
+``` {r KM sexo}
+
+KM_s_fit <- survival::survfit(Surv(HES$fu_time, HES$death) ~ HES$gender)
+
+plot(KM_s_fit)
+
+```
+
+``` {r Teste curvas por sexo}
+
+survdiff(Surv(HES$fu_time, HES$death) ~ HES$gender, rho = 0)
+
+```
+
+##Exemplo 2 - Comparando curvas por idade
+
+Dicotomizando a idade
+
+``` {r Preparandoa a variável}
+
+HES$age_range <- ifelse(HES$age <65, "<65", "≥65")
+HES$age_range <- as_factor(HES$age_range)
+table(HES$age_range)
+```
+Preparando o modelo e plotando
+
+``` {r Modelo idade}
+KM_age <- survfit(Surv(HES$fu_time, HES$death) ~ HES$age_range)
+
+plot(KM_age)
+
+```
+
+Teste de hipótese do modelo H0 = duas curvas são "iguais"
+
+``` {r Teste para idade}
+survdiff(Surv(HES$fu_time, HES$death) ~ HES$age_range)
+
+```
