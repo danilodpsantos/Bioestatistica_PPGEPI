@@ -9,10 +9,14 @@ Carregando o R e os pacotes
 ```{r setup, include=TRUE}
 knitr::opts_chunk$set(echo = TRUE)
 
+#install.packages("survminer")
+
 library(haven)
 library(survival)
 library(ggplot2)
 library(sjlabelled)
+library(survminer)
+library(rockchalk)
 
 ```
 
@@ -21,24 +25,58 @@ Carregando o Dataset do curso e formatando para as análises
 
 ```{r Banco}
 
+# Upando o banco
 HES <- read.csv("/Users/danilodpsantos/Desktop/simulated HF mort data for GMPH (1K) final.csv")
 
+# Preparando as variáveis
+
 HES$gender <- factor(HES$gender)
+
+HES$ethnicgroup <- as_factor(HES$ethnicgroup)
+
+HES$quintile <- as_factor(HES$quintile)
+
+HES$copd <- as_factor(HES$copd)
+
+HES$prior_dnas <- as_factor(HES$prior_dnas)
+
+HES$cancer <- as_factor(HES$cancer)
+
+HES$ihd <- as_factor(HES$ihd)
+
+HES$valvular_disease <- as_factor(HES$valvular_disease)
+
+HES$pvd <- as_factor(HES$pvd)
+
+HES$stroke <- as_factor(HES$stroke)
+
+HES$pneumonia <- as_factor(HES$pneumonia)
+
+HES$renal_disease <- as_factor(HES$renal_disease)
+
+HES$metastatic_cancer <- as_factor(HES$metastatic_cancer)
+
+HES$mental_health <- as_factor(HES$mental_health)
+
+
 
 ```
 
 Preparando a curva e plotando
 
-```{r Kaplan-Meier, echo=FALSE}
+```{r Kaplan-Meier, echo=TRUE}
 
-KM_fit  <- survfit(Surv(HES$fu_time, HES$death) ~ 1)
+# Modelo
+KM_fit  <- survfit(Surv(fu_time, death) ~ 1, data = HES)
 
-plot(KM_fit)
+ggsurvplot(KM_fit)
 ```
 
 Avaliando os S(t) para tempos específicos
 
 ``` {r Avaliação de S(t)}
+
+# Função de sobrevivência
 
 summary(KM_fit,
         times = c(1:7, 30, 60, 90*(1:10)))
@@ -49,14 +87,16 @@ Separando a curva de acordo com alguma característica dos participantes, nesse 
 
 ``` {r KM sexo}
 
-KM_s_fit <- survival::survfit(Surv(HES$fu_time, HES$death) ~ HES$gender)
+#Modelo estratificado por sexo
+KM_s_fit <- survival::survfit(Surv(fu_time, death) ~ gender, 
+                              data = HES)
 
-plot(KM_s_fit)
+ggsurvplot(KM_s_fit)
 
 ```
 
 ``` {r Teste curvas por sexo}
-
+# Teste de diferença entre as curvas
 survdiff(Surv(HES$fu_time, HES$death) ~ HES$gender, rho = 0)
 
 ```
@@ -67,22 +107,397 @@ Dicotomizando a idade
 
 ``` {r Preparandoa a variável}
 
+#Variável faixa de idade
 HES$age_range <- ifelse(HES$age <65, "<65", "≥65")
+
 HES$age_range <- as_factor(HES$age_range)
+
 table(HES$age_range)
 ```
 Preparando o modelo e plotando
 
 ``` {r Modelo idade}
-KM_age <- survfit(Surv(HES$fu_time, HES$death) ~ HES$age_range)
 
-plot(KM_age)
+# Modelo estratificado por faixa de idade
+KM_age <- survfit(Surv(fu_time, death) ~ age_range,
+                  data = HES)
+
+ggsurvplot(KM_age)
 
 ```
 
 Teste de hipótese do modelo H0 = duas curvas são "iguais"
 
 ``` {r Teste para idade}
-survdiff(Surv(HES$fu_time, HES$death) ~ HES$age_range)
+
+# Teste de diferença entre as curvas de idade
+survdiff(Surv(fu_time, death) ~ age_range,
+         data = HES)
+
+```
+
+
+# Regressão de COX
+
+Preparando o modelo
+
+```{r Cox idade, echo=TRUE}
+# Modelo 
+cox_age <- coxph(Surv(fu_time, death) ~ age,
+                 data = HES)
+
+summary(cox_age)
+```
+
+```{r Cox etnia, echo=TRUE}
+
+cox_etn <- coxph(Surv(fu_time, death) ~ ethnicgroup,
+                 data = HES)
+
+summary(cox_etn)
+```
+
+
+
+# Conhecendo os dados e rodando estatísticas descritivas da amostra para decisão das variáveis a entrar no modelo
+
+``` {r descrição das variáveis}
+# Estatísticas descritivas de cada variável
+HES %>%
+    summarize()
+```
+
+A partir dessa análise vemos que a variável prior_dnas tem uma distribuição desigual, isso é ruim para análise da influência do fator  nos devidos desfechos
+
+Para que análise fique mais adequada podemos:
+
+* Considerar como uma variável contínua e assumir relação linear com o desfecho - Escolha se a variável tiver muitos valores
+* Categorizar para cada valor - 
+* Categorizar combinando valores - ESCOLHA NESSE CASO -> ficamos com menos categorias, mas mais participantes em cada uma
+
+```{r consultas perdidas}
+
+# Transformando as consultas perdidas em fator com 4 categorias
+levels(HES$prior_dnas)
+
+HES$prior_dnas_2 <- rockchalk::combineLevels(HES$prior_dnas, levs = c(5, 6, 7, 8, 9,10), newLabel = "4+")
+
+# Avaliando a tabela de frequências brutas
+
+freq_c_bruta <- table(HES$prior_dnas_2)
+freq_c_bruta
+
+# Tabela de frequências relativas
+
+freq_c_relativa <- round(100*prop.table(freq_c_bruta), digits = 1)
+freq_c_relativa
+```
+
+Veja que agora a distribuição entre as categorias ficou um pouco mais uniforme, apesar de perdermos em "resolução"
+
+
+## Agora vamos fazer o ajuste MULTIVARIÁVEL de Cox
+
+```{r ajuste multivariável Cox}
+
+cox_all <- coxph(Surv(fu_time, death) ~ age + gender + copd + prior_dnas_2 + ethnicgroup,
+                 data = HES)
+
+summary(cox_all)
+```
+
+
+##Testando outros preditores de mortalidade nessa amostra
+
+Quintil de renda associada à cor:
+
+```{r Cox mortalidade renda e cor, echo=TRUE}
+
+# Modelo ajustado por renda e cor 
+cox_income <- coxph(Surv(fu_time, death) ~ quintile + ethnicgroup,
+                    data = HES)
+summary(cox_income)
+```
+ Na análise acima a referência utilizada é a categoria 0 de renda. As conclusões ficam prejudicadas para tanto porque a categoria 0 apresenta apenas 4 participantes. exitem 3 abordagens para lidar com o problema da NÃO CONVERGÊNCIA:
+ 
+# Lidando com a NÃO CONVERGÊNCIA
+
+## Mudar a categoria de referência:
+ 
+ Nesse caso vamos mudar a referência de quintil para a categoria de renda mais alta. Fazendo isso consideramos que o fator de risco seja a <strong> privação de renda
+
+```{r referência é renda mais alta}
+#Tabela de frequências
+table(HES$quintile)
+
+# Passando a refrência para a categoria 1(renda mais alta)
+HES$quintile <- relevel(HES$quintile, 
+                        ref = "1")
+# Modelo 
+cox_income_ref <- coxph(Surv(fu_time, death) ~ quintile + ethnicgroup,
+                    data = HES)
+
+summary(cox_income_ref)
+
+```
+
+
+## Juntando categorias de renda
+
+Uma possibilidade é juntar as categorias de renda de forma que a agregação dos níveis de renda permitam um N suficiente par usar essa categoria como referência:
+
+```{r juntando categorias de renda}
+# carregando o pacote rockchalq
+
+
+# Combinando os níveis mais baixos de renda
+HES$quintile_2 <- combineLevels(HES$quintile, levs = c("0", "5"), newLabel = c("5") )
+
+# Modelo corrigido
+cox_income_2 <- coxph(Surv(fu_time, death) ~ quintile_2 + ethnicgroup,
+                    data = HES)
+
+summary(cox_income_2)
+
+ggsurvplot(surv_fit(cox_income_2, data = HES))
+```
+
+## Excluir os participantes da categoria que tem participantes insuficientes
+
+``` {r Ecluindo a categoria}
+
+# Excluindo os dados do quintil 0
+
+HES$quintile_3 <- ifelse(HES$quintile == 0, NA, HES$quintile)
+
+# Preparando o modelo
+cox_income_3 <- coxph(Surv(fu_time, death) ~ quintile_3 + ethnicgroup,
+                    data = HES)
+
+summary(cox_income_3)
+
+
+```
+
+## (Bônus) Excluir a devida variável do seu modelo
+
+Em geral é a opção mais utilizada, mas vale a pena olharmos cada caso e ver se não é possível usar alguma das outras abordagens para corrigir este problema (sem grande prejuízo). Se não for possível, a saída é excluir a variável do modelo.
+
+#Avaliação do pressuposto da proporcionalidade do Hazard
+
+Um dos pressupostos do teste de diferença entre as curvas no modelo de Cox é de que o Hazard seja proporcional ao longo do tempo entre os grupos comparados. 
+Para avaliação de proporcionalidade existem várias diferentes abordagens, todas envolvem avaliar os resíduos do modelo. 
+
+Nesse teste a hipótese nula é de que as duas curvas são proporcionais, resíduo final = 0. Por isso não queremos rejeitar hipótese nula (p ≥ 0.05)
+
+## Avaliação da linearidade dos Hazards
+```{r Avaliação de resíduos lineares}
+
+modelo_genero <- coxph(Surv(fu_time, death) ~ gender,
+                data = HES)
+
+resultados_modelo <- cox.zph(modelo_genero)
+
+resultados_modelo
+
+ggcoxzph(resultados_modelo)
+
+```
+
+
+## Kaplan-Meier
+
+Podemos usar um artifício mais artesanal, olhando a curva de Kaplan-Meier e vendo se as linhas referentes aos diferentes grupos são paralelas ao longo do tempo:
+
+``` {r KM por sexo}
+
+km_sexo <- survfit(Surv(fu_time, death) ~ gender, data = HES) 
+
+ggsurvplot(km_sexo)
+```
+
+## Avaliação da influência de cada ponto
+```{r Avaliação de cada ponto}
+ggcoxdiagnostics(modelo_genero,
+                 type = "dfbeta",
+                 linear.predictions = FALSE)
+
+```
+
+
+## Avaliação de deviance
+``` {r Avaliação de deviance}
+
+ggcoxdiagnostics(modelo_genero,
+                 type = "deviance",
+                 linear.predictions = FALSE)
+
+
+```
+
+## Avaliação de resíduos de Martingale
+
+Testando se de fato a variável contínua tem uma relação linear com o desfecho
+
+* Exemplo: Idade
+
+Caso o pressuposto seja válido, os gráficos devem mostrar uma linha "reta"
+
+```{r avaliaçãode Martingale}
+
+ggcoxfunctional(Surv(fu_time, death) ~ age + log(age) + sqrt(age),
+                data = HES)
+
+```
+
+Nesse caso a linha é reta, validando a afirmação da linearidade de idade com a morte na amostra
+
+* Resíduos próximos do 1 representam indivíduos que morreram "cedo" 
+* Resíduos com valores negativos grandes representam participantes que morreram após o esperado
+
+# Avaliação da proporcionalidade em outra variável: DPOC
+
+
+```{r Avaliação de resíduos lineares: DPOC}
+
+modelo_copd <- coxph(Surv(fu_time, death) ~ copd,
+                data = HES)
+
+resultados_copd <- cox.zph(modelo_copd)
+
+resultados_copd
+
+ggcoxzph(resultados_copd)
+
+```
+
+
+# Caso a proporcionaliidade seja rejeitada: O que fazer?
+
+Antes, o que significa isso?
+
+* Basicamente significa que o hazard par um ou para os dois grupos varia ao longo do tempo, por exemplo:
+  + Vamos considerar que o Hazard para __mortalidade__ no início do seguimento seja maior para os __homens__, mas que ao longo do __tempo__ ele vá diminuindo, até que __cruza__ com o hazard das __mulheres__ quando idosos
+
+##Interação
+
+Para lidar com uma situação deste tipo, podemos considerar uma interação entre os dois fatores que referimos anteriormente:  __sexo__ e __tempo (idade)__
+
+Nesse caso é visível a falta do __coeficiente de interação __ no modelo. Portanto, para corrigir este problema podemos acrescentar este coeficiente. :) 
+
+Testar se a inclusão do coeficiente de interação gera um resultado estatísticamente significativo é uma outra maneira de testar o __pressuposto da proporcionalidade__.
+
+``` {r Interação na modelo de Cox}
+
+modelo_interação <- coxph(Surv(fu_time, death)~ gender + tt(gender),
+                          data = HES)
+
+summary(modelo_interação)
+
+```
+
+Neste exemplo a interação não gerou resultados estatísticamente significativos com a consideração de interação entre sexo e tempo. Isso __indica que não houve violação__ do pressuposto de proporcionalidade do hazards
+
+
+Além do teste estatístico vale a pena plotar o gráfico já que algumas violações dos pressupostos não são visíveis só com o valor-p
+
+```{r Gráfico proporcionalidade com interação}
+zph_interação <- cox.zph(modelo_interação)
+
+ggcoxzph(zph_interação)
+
+```
+
+## Mas e se ainda assim houver violação do pressuposto de proporcionalidade?
+
+Ainda não vale a pena se desesperar, pois podemos usar outras saídas como:
+
+* Dividir a análise em dois períodos
+  + Usar um modelo para o período em que os hazards são proporcionais e outro para quando eles dão forem
+  
+*  __Estratificar__ a análise pela variável que está gerando o problema 
+  + Se for secxo, por exemplo, podemos fazerr um modelo para homens e outro para as mulheres
+  + Essa opção tem a desvantegem de não permitir visualizar o efeito da variável usada para a estratificação no desfecho
+  
+# Mas qual o melhor método para definirmos as variáveis de ajuste?
+
+ Os métododos vistos acima (forward selection e stepwise selection) são muito compexos para aplicarmos quando temos mais de uma variável de ajuste.
+ Um outro método usado com frequência é o __backwards elimination__
+ 
+## Backwards elimination
+
+O Backwards elimination consiste em fazermos um modelo inicial ajustado para todas as variáveis de interesse e depois eliminarmos as que não tiveram uma relação estatisticamente significativa no modelo.
+
+Passos 
+
+1. colocar __todas__ as variáveis de interesse ou (todas as que você tem disponíveis)
+
+2. rodar o modelo e __guardar os coeficientes__
+
+3. Remover de uma vez todos os preditores que não tiveram resultados estatisticamente significativos __OU__  remover o fator com o maior valor p e rodar de novo
+
+4. comparar os coeficientes do modelo ajustado com o modelo sem ajustes
+
+### No que atentar quando fazendo uma __backwards removal__?
+
+__Se os coeficientes não mudaram muito__ do modelo original, este será o modelo final.
+O próximo passo seria testar os pressupostos de novo 
+
+__Se os coeficientes mudarem muito__, temos que continuar nosso ajuste recolocando algumas variáveis que havíamos tirado.
+
+* O que seria mudar muito? 
+ + depende do estatístico que está realizando o teste. 
+ 
+
+## Conhecimento a priori
+ 
+ A melhor maneira de definirmos qual o ajuste que será realizado no modelo é considerar tanto o conhecimento a priori quanto as avaliações estatísticas.
+ Para tanto existem alguns métodos como s DAGs
+
+```{r modelo backwards}
+
+modelo_backwards <- coxph(data = HES,
+                          Surv(fu_time, death) ~ age
+                                               + gender
+                                               + ethnicgroup
+                                               + ihd
+                                               + valvular_disease
+                                               + pvd
+                                               + stroke
+                                               + copd
+                                               + pneumonia
+                                               + hypertension
+                                               + renal_disease
+                                               + cancer
+                                               + metastatic_cancer
+                                               + mental_health)
+
+resultado_backwards <- summary(modelo_backwards)
+
+resultado_backwards
+```
+
+
+```{r modelo backwards ajustado}
+
+modelo_backwards_ajustado <- coxph(data = HES,
+                          Surv(fu_time, death) ~ age
+                                               + gender
+                                               + valvular_disease
+                                               + pneumonia
+                                               + metastatic_cancer)
+
+resultado_backwards_ajustado <- summary(modelo_backwards_ajustado)
+
+resultado_backwards_ajustado
+```
+
+```{r avaliação de proporcionalidade dos Hazards}
+
+zph_backwards_ajustado <- cox.zph(modelo_backwards_ajustado)
+
+zph_backwards_ajustado
+ggcoxzph(zph_backwards_ajustado,
+         )
 
 ```
