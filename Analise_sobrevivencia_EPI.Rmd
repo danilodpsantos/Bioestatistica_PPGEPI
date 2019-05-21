@@ -1,0 +1,139 @@
+---
+title: "Análise de sobreviência PPGEPI"
+author: "Danilo de Paula Santos"
+date: "21/05/2019"
+output: html_document
+---
+
+# A1 CONCEITOS BÁSICOS
+
+A análise de sobrevivência é um campo da estatística que estuda o tempo e a probabilidade da ocorrência de um __evento__ em um ponto ou período no tempo a patir da observação longitudinal da amostra.
+
+Por __evento__ entendemos uma mudança qualitativa / alteração de estadoa em determinado objeto / processo / indivíduo.
+
+Exemplos:
+  * Óbito
+  * Falha de componente de máquina
+  
+  
+Os principais objetivos desses métododos analíticos são 
+
+* Descrever a sobrevivência em um grupo 
+* Comparar as curvas de entre grupos 
+* Modelar variáveis explicativas
+
+## Dados de sobrevivência
+
+As características importantes de dados de sobrevivência são 
+
+* Tempo observado
+* Mudança de estado +
+  * Para variáveis quantitativas é necessário criar uma definição operacional de evento __(não deve ser arbitrária)__
+* Censura
+  -O __tempo exato__ de ocorrência do evento ou de início da exposição nem sempre é conhecido, isso é chamado censura
+  
+## Censura
+
+A censura é um evento recorrente em estudos com acompanhamento longitudinal. Ela é definida como a __não observação do desfecho de interesse__ e pode ocorrer por diferentes motivos, entre eles:
+
+* Perda de seguimento
+* Morte por outras causas
+* Análise realizada antes do desfecho para boa parte dos participantes
+
+###Tipos de censura
+
+Censura à direita
+* Tempo de observação __menor__ do que o tempo até o evento
+* Se ignorada superestima risco
+
+Censura à esquerda
+* Evento acontece __antes__ de determinado tempo, mas não sabemos o tempo exato de ocorrência
+
+Censura intervalar
+* Avento ocorre entre dois pontos conhecidos no tempo, mas não sabemos o tempo exato de ocorrência
+
+Censura Tipo 1
+* Tempo de censura é fixo
+
+Censura tipo 2 
+* Número de eventos é fixo 
+* Acompanhamento acaba depois que o número necessário de evento é observado
+
+Censura aleatória 
+* Ocorre totalmente ao acaso, sem controle do pesquisador
+
+Censura não informativa
+* Ocorrência independente do desfecho
+
+Censura informativa
+* Relacioanda ao desfecho ou exposição estudados
+* Implica em viés de seleção
+
+##Tempo
+Características importantes do tempo 
+
+* Idade do participante - fator de risco para muitas doenças
+* Tempo do estudo - posição ao longo do calendário
+* Tempo de estdo - tempo de observação
+
+## Funções básicas
+
+### Tempo de sobrevida (T)
+
+*É variável aleatória, contínua e não negativa (t≥0)
+
+###Densidade de probabilidade f(t)
+
+É a probabilidade do evento ocorrer em um intervalo instantâneo no tempo
+
+###Função de sobrevivência S(t)
+
+É a probabilidade de o indivíduo sobreviver mais do que um determinado tempo t
+
+###Função taxa de falha ou de risco (hazard function - h(t))
+
+Descreve a a distribuição de probabilidades do evento ocorrer em um intervalo de tempo
+*Pode ser constante ou variável
+*Assume valores de 0 a + ∞
+*A unidade utilizada é tempo a -1
+
+# A2 ESTIMAÇÃO E COMPARAÇÃO DE CURVAS
+
+As funções S(t) e H(t) podem ser estimadas a partir do tempo de sobrevivência observados com o uso de 
+
+## Métodos
+### Procedimentos não paramétricos
+
+A forma da dsitribuiçã de probabilidades de T não precisa ser especificada.
+
+Métodos
+* Tabela de vida
+* Kaplan-Meier
+* Nelson-Aalen
+* Modelos de Cox
+
+### Procedimentos paramétricos
+
+A forma da distribuição de probabilidades de T é conhecida
+
+* Exponencial
+* Weibull
+* Lognormal
+
+### Estimador __Tabela de vida__
+
+O tempo é dividido em intervalos iguais e especificados pelo pesquisador
+
+Para os cálculos nesse caso precisamos usar uma suposiçao atuarial.
+Ela assume que as censuiras ocorrem de forma uniforme dentro de cada intervalo.
+
+O número assumido de indivíduos em risco para cada intervalo é dado então como:
+
+pessoas em risco' = pessoas em risco no começo do intervalo - (censuras no intervalo/2)
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
