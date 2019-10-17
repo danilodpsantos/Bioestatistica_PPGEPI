@@ -3,12 +3,13 @@ title: "Modelos lineares aula 1"
 author: "Danilo de Paula Santos"
 date: "17/10/2019"
 output:
-  pdf_document: 
-    latex_engine: 
+  word_document: default
+  pdf_document:
+    latex_engine: pdflatex
   html_document: default
 ---
 
-```{r preparação do R, message=FALSE, warning=FALSE}
+```{r preparacao_do_R, message=FALSE, warning=FALSE}
 
 # install.packages("compareGroups")
 # install.packages("ggplot2")
@@ -23,20 +24,20 @@ library("haven")
 
 # Estuda da relação entre infecção por acilóstomo e perda de sangue. Tailândia 1970
 
-```{r carregando suwit}
+```{r carregando_suwit}
 
 suwit <- read_sav("C:/Users/00265021/Documents/Cadeiras/Modelos lineares/Suwit.sav")
 
 ```
 
-```{r descritiva suwit}
+```{r descritiva_suwit}
 
 compare_suwit <- compareGroups( ~ ., data = suwit)
 
 summary(compare_suwit)
 ```
 
-```{r tabela suwit}
+```{r tabela_suwit}
 
 tabela_suwit <- createTable(compare_suwit)
 
@@ -47,7 +48,7 @@ tabela_suwit <- createTable(compare_suwit)
 # Estudo Fat_dat "Fitting Percentage of Body Fat to Simple Body Measurements"
 
 
-```{r carregando fat_dat}
+```{r carregando_fat_dat}
 
 fat_dat <- read_sav("C:/Users/00265021/Documents/Cadeiras/Modelos lineares/fat_dat.sav")
 
@@ -59,7 +60,7 @@ Corrigindo os erros de digitação:
 - Case 42) over 200 pounds in weight who is less than 3 feet tall (the height should presumably be 69.5 inches, not 29.5 inches)!
 - The percent body fat estimates are truncated to zero when negative (case 182)
 
-```{r corrigindo fat_dat}
+```{r corrigindo_fat_dat}
 # Altura
 
 fat_dat$altura_pol <- ifelse( fat_dat$numero == 42, 69.5, fat_dat$altura_pol)
@@ -72,26 +73,26 @@ fat_dat$densidade <- ifelse( fat_dat$numero == 96, 1.0591, fat_dat$densidade)
 
 ```
 
-```{r descritivas fat_dat}
+```{r descritivas_fat_dat}
 compare_fat <- compareGroups( ~ ., data = fat_dat)
 
 summary(compare_fat)
 ```
 
 
-```{r tabela fat_dat}
+```{r tabela_fat_dat}
 
 tabela_fat <- createTable(compare_fat)
 
 ```
 
-```{r normalidade fat_dat }
+```{r normalidade_fat_dat }
 
-# plot(compare_fat)
+plot(compare_fat)
 
 ```
 
-```{r dispersão fat_dat }
+```{r dispersao_fat_dat }
 
 disp_fat_dat <- ggplot(fat_dat, aes(x = imc, y = fat_Brozek))+
   geom_point() +
@@ -100,7 +101,7 @@ disp_fat_dat <- ggplot(fat_dat, aes(x = imc, y = fat_Brozek))+
 disp_fat_dat
 ```
 
-```{r regressão linear fat_dat }
+```{r regressao_linear_fat_dat }
 
 lm_imc_brozek <- lm(formula = fat_Brozek ~ imc,
                     data = fat_dat)
@@ -108,7 +109,7 @@ lm_imc_brozek <- lm(formula = fat_Brozek ~ imc,
 summary(lm_imc_brozek)
 
 ```
-``` {r confint linear fat_dat }
+``` {r confint_linear_fat_dat }
 
 confint(lm_imc_brozek)
 

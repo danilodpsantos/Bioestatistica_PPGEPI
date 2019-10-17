@@ -1,0 +1,443 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={Modelos lineares aula 1},
+            pdfauthor={Danilo de Paula Santos},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\providecommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{Modelos lineares aula 1}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+    \author{Danilo de Paula Santos}
+    \preauthor{\centering\large\emph}
+  \postauthor{\par}
+      \predate{\centering\large\emph}
+  \postdate{\par}
+    \date{17/10/2019}
+
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
+
+\begin{document}
+\maketitle
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# install.packages("compareGroups")}
+\CommentTok{# install.packages("ggplot2")}
+\CommentTok{# install.packages("data.table")}
+
+
+\KeywordTok{library}\NormalTok{(}\StringTok{"compareGroups"}\NormalTok{)}
+\KeywordTok{library}\NormalTok{(}\StringTok{"ggplot2"}\NormalTok{)}
+\KeywordTok{library}\NormalTok{(}\StringTok{"haven"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{estuda-da-relacao-entre-infeccao-por-acilostomo-e-perda-de-sangue.-tailandia-1970}{%
+\section{Estuda da relação entre infecção por acilóstomo e perda de
+sangue. Tailândia
+1970}\label{estuda-da-relacao-entre-infeccao-por-acilostomo-e-perda-de-sangue.-tailandia-1970}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{suwit <-}\StringTok{ }\KeywordTok{read_sav}\NormalTok{(}\StringTok{"C:/Users/00265021/Documents/Cadeiras/Modelos lineares/Suwit.sav"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{compare_suwit <-}\StringTok{ }\KeywordTok{compareGroups}\NormalTok{( }\OperatorTok{~}\StringTok{ }\NormalTok{., }\DataTypeTok{data =}\NormalTok{ suwit)}
+
+\KeywordTok{summary}\NormalTok{(compare_suwit)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##  --- Descriptives of each row-variable ---
+## 
+## ------------------- 
+## row-variable: Identificação 
+## 
+##       N  mean sd       lower    upper   
+## [ALL] 15 8    4.472136 5.523414 10.47659
+## 
+## ------------------- 
+## row-variable: número de vermes 
+## 
+##       N  mean  sd       lower    upper   
+## [ALL] 15 552.4 513.9007 267.8113 836.9887
+## 
+## ------------------- 
+## row-variable: Perda de sangue por dia 
+## 
+##       N  mean     sd       lower    upper   
+## [ALL] 15 33.45267 24.85249 19.68982 47.21551
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{tabela_suwit <-}\StringTok{ }\KeywordTok{createTable}\NormalTok{(compare_suwit)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{estudo-fat_dat-fitting-percentage-of-body-fat-to-simple-body-measurements}{%
+\section{Estudo Fat\_dat ``Fitting Percentage of Body Fat to Simple Body
+Measurements''}\label{estudo-fat_dat-fitting-percentage-of-body-fat-to-simple-body-measurements}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fat_dat <-}\StringTok{ }\KeywordTok{read_sav}\NormalTok{(}\StringTok{"C:/Users/00265021/Documents/Cadeiras/Modelos lineares/fat_dat.sav"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+Corrigindo os erros de digitação:
+
+\begin{itemize}
+\tightlist
+\item
+  The body densities for cases 48, 76, and 96, for instance, each seem
+  to have one digit in error as can be seen from the two body fat
+  percentage values.
+\item
+  Case 42) over 200 pounds in weight who is less than 3 feet tall (the
+  height should presumably be 69.5 inches, not 29.5 inches)!
+\item
+  The percent body fat estimates are truncated to zero when negative
+  (case 182)
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# Altura}
+
+\NormalTok{fat_dat}\OperatorTok{$}\NormalTok{altura_pol <-}\StringTok{ }\KeywordTok{ifelse}\NormalTok{( fat_dat}\OperatorTok{$}\NormalTok{numero }\OperatorTok{==}\StringTok{ }\DecValTok{42}\NormalTok{, }\FloatTok{69.5}\NormalTok{, fat_dat}\OperatorTok{$}\NormalTok{altura_pol)}
+
+\CommentTok{# Densidades}
+
+\NormalTok{fat_dat}\OperatorTok{$}\NormalTok{densidade <-}\StringTok{ }\KeywordTok{ifelse}\NormalTok{( fat_dat}\OperatorTok{$}\NormalTok{numero }\OperatorTok{==}\StringTok{ }\DecValTok{48}\NormalTok{, }\FloatTok{1.0865}\NormalTok{, fat_dat}\OperatorTok{$}\NormalTok{densidade)}
+\NormalTok{fat_dat}\OperatorTok{$}\NormalTok{densidade <-}\StringTok{ }\KeywordTok{ifelse}\NormalTok{( fat_dat}\OperatorTok{$}\NormalTok{numero }\OperatorTok{==}\StringTok{ }\DecValTok{76}\NormalTok{, }\FloatTok{1.0566}\NormalTok{, fat_dat}\OperatorTok{$}\NormalTok{densidade)}
+\NormalTok{fat_dat}\OperatorTok{$}\NormalTok{densidade <-}\StringTok{ }\KeywordTok{ifelse}\NormalTok{( fat_dat}\OperatorTok{$}\NormalTok{numero }\OperatorTok{==}\StringTok{ }\DecValTok{96}\NormalTok{, }\FloatTok{1.0591}\NormalTok{, fat_dat}\OperatorTok{$}\NormalTok{densidade)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{compare_fat <-}\StringTok{ }\KeywordTok{compareGroups}\NormalTok{( }\OperatorTok{~}\StringTok{ }\NormalTok{., }\DataTypeTok{data =}\NormalTok{ fat_dat)}
+
+\KeywordTok{summary}\NormalTok{(compare_fat)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##  --- Descriptives of each row-variable ---
+## 
+## ------------------- 
+## row-variable: numero 
+## 
+##       N   mean  sd       lower    upper   
+## [ALL] 252 126.5 72.89033 117.4569 135.5431
+## 
+## ------------------- 
+## row-variable: fat_Brozek 
+## 
+##       N   mean     sd       lower    upper  
+## [ALL] 252 18.93849 7.750856 17.97689 19.9001
+## 
+## ------------------- 
+## row-variable: fat_Siri 
+## 
+##       N   mean     sd      lower    upper   
+## [ALL] 252 19.15079 8.36874 18.11253 20.18906
+## 
+## ------------------- 
+## row-variable: densidade 
+## 
+##       N   mean     sd       lower    upper   
+## [ALL] 252 1.055455 0.018909 1.053109 1.057801
+## 
+## ------------------- 
+## row-variable: idade 
+## 
+##       N   mean     sd       lower    upper   
+## [ALL] 252 44.88492 12.60204 43.32146 46.44838
+## 
+## ------------------- 
+## row-variable: Peso em libras 
+## 
+##       N   mean     sd       lower    upper   
+## [ALL] 252 178.9244 29.38916 175.2783 182.5706
+## 
+## ------------------- 
+## row-variable: altura_pol 
+## 
+##       N   mean     sd       lower    upper  
+## [ALL] 252 70.30754 2.609583 69.98378 70.6313
+## 
+## ------------------- 
+## row-variable: kg/m2 
+## 
+##       N   mean    sd       lower   upper   
+## [ALL] 252 25.4369 3.648111 24.9843 25.88951
+## 
+## ------------------- 
+## row-variable: peso da massa magra 
+## 
+##       N   mean     sd       lower   upper   
+## [ALL] 252 143.7139 18.23164 141.452 145.9758
+## 
+## ------------------- 
+## row-variable: Circunferencia do pescoço 
+## 
+##       N   mean     sd       lower    upper   
+## [ALL] 252 37.99206 2.430913 37.69047 38.29365
+## 
+## ------------------- 
+## row-variable: Circunferencia do peito 
+## 
+##       N   mean     sd       lower    upper   
+## [ALL] 252 100.8242 8.430476 99.77829 101.8701
+## 
+## ------------------- 
+## row-variable: Circ do abdomem 
+## 
+##       N   mean     sd       lower    upper   
+## [ALL] 252 92.55595 10.78308 91.21816 93.89375
+## 
+## ------------------- 
+## row-variable: circ do quadril 
+## 
+##       N   mean     sd       lower    upper   
+## [ALL] 252 99.90476 7.164058 99.01596 100.7936
+## 
+## ------------------- 
+## row-variable: circ do coxa 
+## 
+##       N   mean     sd       lower    upper   
+## [ALL] 252 59.40595 5.249952 58.75462 60.05728
+## 
+## ------------------- 
+## row-variable: circ do joelho 
+## 
+##       N   mean     sd       lower    upper  
+## [ALL] 252 38.59048 2.411805 38.29126 38.8897
+## 
+## ------------------- 
+## row-variable: circ do tornozelo 
+## 
+##       N   mean     sd       lower    upper   
+## [ALL] 252 23.10238 1.694893 22.89211 23.31266
+## 
+## ------------------- 
+## row-variable: circ do biceps 
+## 
+##       N   mean     sd       lower    upper   
+## [ALL] 252 32.27341 3.021274 31.89858 32.64825
+## 
+## ------------------- 
+## row-variable: circ do antebraco 
+## 
+##       N   mean     sd       lower    upper   
+## [ALL] 252 28.66389 2.020691 28.41319 28.91458
+## 
+## ------------------- 
+## row-variable: circ do pulso 
+## 
+##       N   mean     sd       lower    upper   
+## [ALL] 252 18.22976 0.933585 18.11394 18.34559
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{tabela_fat <-}\StringTok{ }\KeywordTok{createTable}\NormalTok{(compare_fat)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# plot(compare_fat)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{disp_fat_dat <-}\StringTok{ }\KeywordTok{ggplot}\NormalTok{(fat_dat, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ imc, }\DataTypeTok{y =}\NormalTok{ fat_Brozek))}\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_point}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme_minimal}\NormalTok{()}
+
+\NormalTok{disp_fat_dat}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Aula-1---Regressão-simples_files/figure-latex/dispersão fat_dat-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lm_imc_brozek <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(}\DataTypeTok{formula =}\NormalTok{ fat_Brozek }\OperatorTok{~}\StringTok{ }\NormalTok{imc,}
+                    \DataTypeTok{data =}\NormalTok{ fat_dat)}
+
+\KeywordTok{summary}\NormalTok{(lm_imc_brozek)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = fat_Brozek ~ imc, data = fat_dat)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -21.4292  -3.4478   0.2113   3.8663  11.7826 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(>|t|)    
+## (Intercept) -20.40508    2.36723   -8.62 7.78e-16 ***
+## imc           1.54671    0.09212   16.79  < 2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 5.324 on 250 degrees of freedom
+## Multiple R-squared:   0.53,  Adjusted R-squared:  0.5281 
+## F-statistic: 281.9 on 1 and 250 DF,  p-value: < 2.2e-16
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{confint}\NormalTok{(lm_imc_brozek)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##                  2.5 %    97.5 %
+## (Intercept) -25.067331 -15.74283
+## imc           1.365275   1.72815
+\end{verbatim}
+
+A cada aumento de 1 unidade no IMC ocorre aumento de 1.55\% na gordura
+corporal. O intervalo de confiança é de 1.36 a 1.73.
+
+
+\end{document}
