@@ -1,0 +1,105 @@
+---
+title: "Modelos lineares aula 1"
+author: "Danilo de Paula Santos"
+date: "17/10/2019"
+output: html_document
+---
+
+```{r preparação do R}
+
+# install.packages("compareGroups")
+# install.packages("ggplot2")
+# install.packages("data.table")
+
+
+library("compareGroups")
+library("ggplot2")
+library("haven")
+
+```
+
+# Estuda da relação entre infecção por acilóstomo e perda de sangue. Tailândia 1970
+
+```{r carregando suwit}
+
+suwit <- read_sav("C:/Users/00265021/Documents/Cadeiras/Modelos lineares/Suwit.sav")
+
+```
+
+```{r descritiva suwit}
+
+compare_suwit <- compareGroups( ~ ., data = suwit)
+
+summary(compare_suwit)
+```
+
+```{r tabela suwit}
+
+createTable(compare_suwit)
+```
+
+
+# Estudo Fat_dat "Fitting Percentage of Body Fat to Simple Body Measurements"
+
+
+```{r carregando fat_dat}
+
+fat_dat <- read_sav("C:/Users/00265021/Documents/Cadeiras/Modelos lineares/fat_dat.sav")
+
+```
+
+Corrigindo os erros de digitação:
+
+- The body densities for cases 48, 76, and 96, for instance, each seem to have one digit in error as can be seen from the two body fat percentage values.
+- Case 42) over 200 pounds in weight who is less than 3 feet tall (the height should presumably be 69.5 inches, not 29.5 inches)!
+- The percent body fat estimates are truncated to zero when negative (case 182)
+
+```{r corrigindo fat_dat}
+# Altura
+
+fat_dat2$altura_pol <- ifelse( fat_dat2$numero == 42, 69.5, fat_dat2$altura_pol)
+
+# Densidades
+
+fat_dat2$densidade <- ifelse( fat_dat2$numero == 48, 1.0865, fat_dat2$densidade)
+fat_dat2$densidade <- ifelse( fat_dat2$numero == 76, 1.0566, fat_dat2$densidade)
+fat_dat2$densidade <- ifelse( fat_dat2$numero == 96, 1.0591, fat_dat2$densidade)
+
+```
+
+
+
+```{r descritivas fat_dat}
+compare_fat <- compareGroups( ~ ., data = fat_dat2)
+
+summary(compare_fat)
+```
+
+
+```{r tabela fat_dat}
+
+createTable(compare_fat)
+
+```
+
+```{r normalidade fat_dat }
+
+plot(compare_fat)
+
+```
+
+```{r dispersão fat_dat }
+
+ggplot(fat_dat2, aes(x = imc, y = fat_Brozek))+
+  geom_point() +
+  theme_minimal()
+
+```
+
+```{r regressão fat_dat }
+
+ggplot(fat_dat2, aes(x = imc, y = fat_Brozek))+
+  geom_point() +
+  theme_minimal()
+
+```
