@@ -1,6 +1,6 @@
 ---
 title: "Modelos lineares aula 1"
-author: "Danilo de Paula Santos"
+author: "Danilo de Paula Santos/Gabriela Wunsch Lopes"
 date: "17/10/2019"
 output:
   word_document: default
