@@ -41,9 +41,34 @@ summary(compare_suwit)
 
 tabela_suwit <- createTable(compare_suwit)
 
+```
+
+
+```{r suwit_scatter }
+
+suwit_scatter <- ggplot(suwit, aes(x = vermes, y = perda_sangue))+
+  geom_point() +
+  theme_minimal()
+
+suwit_scatter
+```
+
+```{r suwit_regression}
+
+lm_suwit <- lm(formula = perda_sangue ~ vermes,
+                    data = suwit)
+
+summary(lm_suwit)
 
 ```
 
+``` {r confint_suwit }
+
+confint(lm_suwit)
+
+```
+
+A cada aumento 1 verme, ocorre um aumento de 0.04 (95%IC 0.026 - 0.056)
 
 # Estudo Fat_dat "Fitting Percentage of Body Fat to Simple Body Measurements"
 
@@ -116,3 +141,6 @@ confint(lm_imc_brozek)
 ```
 
 A cada aumento de 1 unidade no IMC ocorre aumento de 1.55% na gordura corporal. O intervalo de confiança é de 1.36 a 1.73.
+
+
+
