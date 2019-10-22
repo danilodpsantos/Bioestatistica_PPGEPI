@@ -22,7 +22,9 @@ library("haven")
 
 ```
 
-# Estuda da relação entre infecção por acilóstomo e perda de sangue. Tailândia 1970
+# Suwit dataset
+
+## Estuda da relação entre infecção por acilóstomo e perda de sangue. Tailândia 1970
 
 ```{r carregando_suwit}
 
@@ -86,8 +88,9 @@ suwit_regression
 ```
 
 
+# Fat_dat dataset
 
-# Estudo Fat_dat "Fitting Percentage of Body Fat to Simple Body Measurements"
+## Estudo Fat_dat "Fitting Percentage of Body Fat to Simple Body Measurements"
 
 
 ```{r carregando_fat_dat}
@@ -161,6 +164,7 @@ A cada aumento de 1 unidade no IMC ocorre aumento de 1.55% na gordura corporal. 
 
 # Anscombe dataset
 
+## 4 bancos com formas funcionais diferentes mas estatísticas resumo e linhas de regressão idênticas
 
 ```{r anscombe_dataset}
 
