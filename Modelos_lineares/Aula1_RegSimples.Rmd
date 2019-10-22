@@ -80,7 +80,7 @@ suwit_regression <- ggplot(suwit, aes(x = vermes, y = perda_sangue))+
   labs(title = paste("Adj R2 = ",signif(summary(lm_suwit)$adj.r.squared, 5),
                          "Intercept =",signif(lm_suwit$coef[[1]],5 ),
                          " Slope =",signif(lm_suwit$coef[[2]], 5),
-                         " P =",signif(summary(lm_suwit)$coef[2,4], 5)))
+                         " p =",signif(summary(lm_suwit)$coef[2,4], 5)))
 
 suwit_regression
 ```
