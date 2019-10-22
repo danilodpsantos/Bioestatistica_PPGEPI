@@ -159,5 +159,59 @@ confint(lm_imc_brozek)
 
 A cada aumento de 1 unidade no IMC ocorre aumento de 1.55% na gordura corporal. O intervalo de confiança é de 1.36 a 1.73.
 
+# Anscombe dataset
 
 
+```{r anscombe_dataset}
+
+anscombe_dataset <- data("anscombe")
+
+```
+
+```{r anscombe_descriptives}
+
+compare_anscombe <- compareGroups(data = anscombe, ~ x1+
+                                     x2+
+                                     x3+
+                                     x4)
+
+createTable(compare_anscombe)
+```
+
+```{r anscombe_scatter_x1 }
+
+x1_scatter <- ggplot(anscombe, aes(x = x1, y = y1))+
+  geom_point() +
+  theme_minimal()+
+  geom_smooth(method = "lm", se = FALSE)
+
+x1_scatter
+```
+
+```{r anscombe_scatter_x2 }
+
+x2_scatter <- ggplot(anscombe, aes(x = x2, y = y2))+
+  geom_point() +
+  theme_minimal() +
+  geom_smooth(method = "lm", se = FALSE)
+
+x2_scatter
+```
+```{r anscombe_scatter_x2 }
+
+x3_scatter <- ggplot(anscombe, aes(x = x3, y = y3))+
+  geom_point() +
+  theme_minimal() +
+  geom_smooth(method = "lm", se = FALSE)
+
+x3_scatter
+```
+```{r anscombe_scatter_x4 }
+
+x4_scatter <- ggplot(anscombe, aes(x = x4, y = y4))+
+  geom_point() +
+  theme_minimal() +
+  geom_smooth(method = "lm", se = FALSE)
+
+x4_scatter
+```
