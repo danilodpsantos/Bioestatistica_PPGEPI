@@ -70,6 +70,23 @@ confint(lm_suwit)
 
 A cada aumento 1 verme, ocorre um aumento de 0.04 (95%IC 0.026 - 0.056)
 
+
+```{r suwit_regression }
+
+suwit_regression <- ggplot(suwit, aes(x = vermes, y = perda_sangue))+
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_minimal() +
+  labs(title = paste("Adj R2 = ",signif(summary(lm_suwit)$adj.r.squared, 5),
+                         "Intercept =",signif(lm_suwit$coef[[1]],5 ),
+                         " Slope =",signif(lm_suwit$coef[[2]], 5),
+                         " P =",signif(summary(lm_suwit)$coef[2,4], 5)))
+
+suwit_regression
+```
+
+
+
 # Estudo Fat_dat "Fitting Percentage of Body Fat to Simple Body Measurements"
 
 
