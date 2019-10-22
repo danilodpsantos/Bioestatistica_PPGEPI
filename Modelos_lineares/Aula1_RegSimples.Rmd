@@ -3,7 +3,6 @@ title: "Modelos lineares aula 1"
 author: "Danilo de Paula Santos/Gabriela Wunsch Lopes"
 date: "17/10/2019"
 output:
-  word_document: default
   pdf_document:
     latex_engine: pdflatex
   html_document: default
@@ -19,6 +18,7 @@ output:
 library("compareGroups")
 library("ggplot2")
 library("haven")
+library("ggpubr")
 
 ```
 
@@ -72,22 +72,8 @@ confint(lm_suwit)
 
 ```
 
-A cada aumento 1 verme, ocorre um aumento de 0.04 (95%IC 0.026 - 0.056)
+A cada aumento 1 verme, ocorre um aumento de 0.04 (95%IC 0.026 - 0.056), sendo que 71,6% da variabilidade da perda total de sangue decorre do aumento do número de vermes.
 
-
-```{r suwit_regression }
-
-suwit_regression <- ggplot(suwit, aes(x = vermes, y = perda_sangue))+
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  theme_minimal() +
-  labs(title = paste("Adj R2 = ",signif(summary(lm_suwit)$adj.r.squared, 5),
-                         "Intercept =",signif(lm_suwit$coef[[1]],5 ),
-                         " Slope =",signif(lm_suwit$coef[[2]], 5),
-                         " p =",signif(summary(lm_suwit)$coef[2,4], 5)))
-
-suwit_regression
-```
 
 
 ``` {r confidence_prediction_suwit }
@@ -167,16 +153,16 @@ plot(compare_fat)
 
 ```
 
-```{r dispersao_fat_dat }
+```{r dispersao_fat_Brozek }
 
-disp_fat_dat <- ggplot(fat_dat, aes(x = imc, y = fat_Brozek))+
+disp_fat_Brozek<- ggplot(fat_dat, aes(x = imc, y = fat_Brozek))+
   geom_point() +
   theme_minimal()
 
-disp_fat_dat
+disp_fat_Brozek
 ```
 
-```{r regressao_linear_fat_dat }
+```{r lm_fat_Brozek}
 
 lm_imc_brozek <- lm(formula = fat_Brozek ~ imc,
                     data = fat_dat)
@@ -184,13 +170,67 @@ lm_imc_brozek <- lm(formula = fat_Brozek ~ imc,
 summary(lm_imc_brozek)
 
 ```
-``` {r confint_linear_fat_dat }
+``` {r confint_fat_Brozek }
 
 confint(lm_imc_brozek)
 
 ```
 
-A cada aumento de 1 unidade no IMC ocorre aumento de 1.55% na gordura corporal. O intervalo de confiança é de 1.36 a 1.73.
+A cada aumento de 1 unidade no IMC ocorre aumento de 1.55% na gordura corporal pelo índice Brozek. O intervalo de confiança é de 1.36 a 1.73.
+
+```{r predict_fat_brozek}
+
+brozek_pred <- predict(lm_imc_brozek, interval = "predict")
+
+dat_brozek <-cbind(fat_dat, brozek_pred)
+```
+
+```{r regression_plot_fat_Brozek }
+
+plot_fat_Brozek <- ggplot(dat_brozek, aes(x = imc, y = fat_Brozek))+
+  geom_point() + 
+  geom_smooth (method = "lm",)+
+  theme_minimal() +
+  geom_line(aes(y = lwr), col = "coral2", linetype = "dashed") +   geom_line(aes(y = upr), col = "coral2", linetype = "dashed")
+
+plot_fat_Brozek
+```
+
+```{r regressao_linear_fat_Siri }
+
+lm_imc_siri <- lm(formula = fat_Siri  ~ imc,
+                    data = fat_dat)
+
+summary(lm_imc_siri)
+
+```
+``` {r confint_fat_siri }
+
+confint(lm_imc_siri)
+
+```
+
+Para o aumento de 1 ponto no IMC ocorre  aumento de 1.7% (95%IC 1.5-1.86) na gordura corporal. O modelo explica 52% da variabilidade da gordura corporal.
+
+```{r predict_fat_siri}
+
+siri_pred <- predict(lm_imc_siri, interval = "predict")
+
+dat_siri <-cbind(fat_dat, siri_pred)
+```
+
+```{r regression_plot_fat_siri }
+
+plot_fat_siri <- ggplot(dat_siri, aes(x = imc, y = fat_Siri))+
+  geom_point() + 
+  geom_smooth (method = "lm",)+
+  theme_minimal() +
+  geom_line(aes(y = lwr), col = "coral2", linetype = "dashed") +   geom_line(aes(y = upr), col = "coral2", linetype = "dashed")
+
+plot_fat_siri
+```
+
+
 
 # Anscombe dataset
 
@@ -231,7 +271,7 @@ x2_scatter <- ggplot(anscombe, aes(x = x2, y = y2))+
 
 x2_scatter
 ```
-```{r anscombe_scatter_x2 }
+```{r anscombe_scatter_x3 }
 
 x3_scatter <- ggplot(anscombe, aes(x = x3, y = y3))+
   geom_point() +
