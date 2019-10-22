@@ -43,6 +43,8 @@ summary(compare_suwit)
 
 tabela_suwit <- createTable(compare_suwit)
 
+tabela_suwit
+
 ```
 
 
@@ -87,6 +89,34 @@ suwit_regression <- ggplot(suwit, aes(x = vermes, y = perda_sangue))+
 suwit_regression
 ```
 
+
+``` {r confidence_prediction_suwit }
+
+suwit_pred <- predict(lm_suwit, interval = 'predict')
+
+suwit <- cbind(suwit, suwit_pred)
+
+suwit_pred_plot <- ggplot(suwit, aes(x = vermes, y = perda_sangue)) +
+                                 geom_point() +
+                                 geom_smooth(method = "lm") +
+                                 theme_minimal() +
+                                 geom_line(aes(y = lwr), col = "coral2", linetype = "dashed") +
+                                 geom_line(aes(y = upr), col = "coral2", linetype = "dashed") +
+  labs(title = paste("Adj R2 = ",signif(summary(lm_suwit)$adj.r.squared, 5),
+                         "Intercept =",signif(lm_suwit$coef[[1]],5 ),
+                         " Slope =",signif(lm_suwit$coef[[2]], 5),
+                         " p =",signif(summary(lm_suwit)$coef[2,4], 5)))
+  
+  
+  
+  
+suwit_pred_plot
+                    
+
+
+```
+
+A faixa cinza corresponde ao intervalo de confiança e as linhas laranja são os limites do intervalo de predição.
 
 # Fat_dat dataset
 
