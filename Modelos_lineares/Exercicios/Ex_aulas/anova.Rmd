@@ -1,0 +1,74 @@
+---
+title: "Anova 1 way"
+author: "Danilo de Paula Santos/ Gabriela Wünsch Lopes"
+date: "25 de outubro de 2019"
+output: html_document
+---
+
+```{r setting_r}
+
+install.packages("haven")
+install.packages("compareGroups")
+install.packages("car")
+
+library("haven")
+library("compareGroups")
+library("car")
+
+```
+
+```{r dataset_stroke}
+
+stroke <- read_sav(file = "C:/Users/PPGEPI/Downloads/stroke_clean.sav")
+
+stroke$anticlot <- as.factor(stroke$anticlot)
+
+```
+
+```{r descriptives_stroke_age}
+
+compare_stroke_age <- compareGroups(data = stroke,
+                                      anticlot ~ age)
+
+table_stroke_age <- createTable(compare_stroke)
+
+table_stroke_age
+
+```
+
+```{r descriptives_stroke_age}
+
+plot(compare_stroke_age)+
+  
+```
+
+
+```{r levene_stroke_age}
+
+levene_stroke_age <- leveneTest(age ~ anticlot, 
+    data = stroke)
+
+levene_stroke_age
+
+```
+
+
+```{r anova_stroke_age}
+
+anova_stroke_age <- aov(formula = age ~ anticlot, 
+    data = stroke)
+
+anova_stroke_age
+
+```
+
+
+```{r residuals_stroke_age}
+
+residuals_stroke_age <- resid(anova_stroke_age)
+
+stand_resid_stroke_age <- rstandard(anova_stroke_age)
+
+plot(anova_stroke_age)
+
+```

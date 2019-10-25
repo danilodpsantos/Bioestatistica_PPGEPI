@@ -1,0 +1,403 @@
+---
+title: "Modelos lineares aula 1"
+author: "Danilo de Paula Santos/Gabriela Wunsch Lopes"
+date: "17/10/2019"
+output:
+  html_document: default
+  pdf_document:
+    latex_engine: pdflatex
+---
+
+```{r preparacao_do_R, message=FALSE, warning=FALSE}
+
+# install.packages("compareGroups")
+# install.packages("ggplot2")
+# install.packages("data.table")
+
+
+library("compareGroups")
+library("ggplot2")
+library("haven")
+library("ggpubr")
+library("dplyr")
+library(knitr)
+```
+
+# Suwit dataset
+
+## Estudo da relação entre infecção por ancilóstomo e perda de sangue. Tailândia 1970
+
+```{r carregando_suwit}
+
+suwit <- read_sav("Bancos/Suwit.sav")
+
+```
+
+#### Primeiro passo: verificar o banco
+
+```{r descritiva_suwit}
+
+compare_suwit <- compareGroups( ~ ., data = suwit)
+
+summary(compare_suwit)
+```
+
+```{r tabela_suwit}
+
+tabela_suwit <- createTable(compare_suwit)
+
+tabela_suwit
+
+```
+
+#### Segundo passo: verificar linearidade com gráfico de dispersão e identificar pontos
+
+1) Gráfico de dispersão
+
+```{r suwit_scatter }
+
+suwit_scatter <- ggplot(suwit, aes(x = vermes, y = perda_sangue))+
+  geom_point() +
+  scale_x_continuous("Número de vermes") +
+  scale_y_continuous("Perda de sangue por um dia") +
+  theme_minimal()
+
+suwit_scatter
+```
+
+2) Identificando pontos: qual o ID do ponto mais extremo na vertical?
+
+```{r outlier_na_vertical, echo=TRUE}
+
+suwit %>%
+  filter(perda_sangue>75, vermes<1500)
+
+```
+
+#### Terceiro passo: estimar modelo
+
+O modelo de regressão linear simples para a perda de sangue da amostra em função da variável preditora "número de vermes" pode ser visualizado como uma linha reta no gráfico, estimada pelo método dos mínimos quadrados, que corresponde à melhor representação de uma linha que percorre os dados tentando minimizar a distância entre a linha e as observações (pontos)
+
+```{r suwit_regression}
+
+lm_suwit <- lm(formula = perda_sangue ~ vermes,
+                    data = suwit)
+
+summary(lm_suwit)
+
+```
+
+Além da estimativa de B0 / intercepto (Intercept) e B1/ inclinação (vermes), também observamos o resultado de um teste de significância do preditor B1 (Pr(>|t|)).
+O coeficiente angular da reta da amostra (b= 0.04092) é significativamente diferente de zero, sendo o p-valor do teste 6.99e-05 ***
+O coeficiente de determinação (Multiple R-squared) é 0.716, indicando que 71,6% da variabilidade da perda de sangue (o quanto varia em relação ao valor de perda média da amostra) é explicada pelo aumento do número de vermes.
+
+
+Gerando intervalo de confiança para os parâmetros estimados. O intervalo de confiança estima quanto, em média, é a perda sanguínea de um grupo de pacientes com determinado número de vermes
+
+``` {r confint_suwit }
+
+confint(lm_suwit)
+
+```
+
+A cada aumento de 1 verme, ocorre um aumento de 0.04 (95%IC 0.026 - 0.056) na perda de sangue.
+
+
+Estimando intervalo de predição para cada observação do banco. O intervalo de predição prediz a perda de sangue para um paciente que apresenta determinado número de vermes
+
+``` {r confidence_prediction_suwit }
+
+suwit_pred <- predict(lm_suwit, interval = 'predict')
+
+suwit_pred
+```
+
+Incluindo o intervalo de predição para cada observação do banco
+
+``` {r merging_columns}
+
+suwit <- cbind(suwit, suwit_pred)
+
+```
+
+Gerando um gráfico contendo intervalo de confiança e intervalo de predição
+
+``` {r full_plot_suwit}
+
+suwit_pred_plot <- ggplot(suwit, aes(x = vermes, y = perda_sangue)) +
+                                 geom_point() +
+                                 geom_smooth(method = "lm") +
+                                 scale_x_continuous("Número de vermes") +
+                                 scale_y_continuous("Perda de sangue por um dia") +
+                                 theme_minimal() +
+                                 geom_line(aes(y = lwr), col = "coral2", linetype = "dashed") +
+                                 geom_line(aes(y = upr), col = "coral2", linetype = "dashed") +
+  labs(title = paste("Adj R2 = ",signif(summary(lm_suwit)$adj.r.squared, 5),
+                         "Intercept =",signif(lm_suwit$coef[[1]],5 ),
+                         " Slope =",signif(lm_suwit$coef[[2]], 5),
+                         " p =",signif(summary(lm_suwit)$coef[2,4], 5)))
+  
+  
+  
+  
+suwit_pred_plot
+                    
+
+
+```
+
+A faixa cinza corresponde ao intervalo de confiança e as linhas laranja são os limites do intervalo de predição.
+
+# Fat_dat dataset
+
+## Estudo Fat_dat "Fitting Percentage of Body Fat to Simple Body Measurements"
+
+
+```{r carregando_fat_dat}
+
+fat_dat <- read_sav("Bancos/fat_dat.sav")
+
+```
+
+#### Primeiro passo: verificar o banco e corrigir os erros de digitação:
+
+- The body densities for cases 48, 76, and 96, for instance, each seem to have one digit in error as can be seen from the two body fat percentage values.
+- Case 42) over 200 pounds in weight who is less than 3 feet tall (the height should presumably be 69.5 inches, not 29.5 inches)!
+- The percent body fat estimates are truncated to zero when negative (case 182)
+
+```{r corrigindo_fat_dat}
+# Altura
+
+fat_dat$altura_pol <- ifelse( fat_dat$numero == 42, 69.5, fat_dat$altura_pol)
+
+# Densidades
+
+fat_dat$densidade <- ifelse( fat_dat$numero == 48, 1.0865, fat_dat$densidade)
+fat_dat$densidade <- ifelse( fat_dat$numero == 76, 1.0566, fat_dat$densidade)
+fat_dat$densidade <- ifelse( fat_dat$numero == 96, 1.0591, fat_dat$densidade)
+
+```
+
+
+```{r descritivas_fat_dat}
+compare_fat <- compareGroups( ~ ., data = fat_dat)
+
+summary(compare_fat)
+```
+
+
+```{r tabela_fat_dat}
+
+tabela_fat <- createTable(compare_fat)
+
+tabela_fat
+```
+
+```{r normalidade_fat_dat }
+
+plot(compare_fat)
+
+```
+
+#### Segundo passo: verificar linearidade com gráfico de dispersão. Identificar pontos
+
+1) Gráfico de dispersão
+
+```{r dispersao_fat_Brozek }
+
+disp_fat_Brozek<- ggplot(fat_dat, aes(x = imc, y = fat_Brozek))+
+  geom_point() +
+  theme_minimal()
+
+disp_fat_Brozek
+```
+
+2) Identificando pontos outliers: outlier na horizontal
+
+```{r outlier_na_horizontal, echo=TRUE}
+fat_dat %>%
+  filter(imc>40)
+```
+
+#### Terceiro passo: estimar modelo
+
+```{r lm_fat_Brozek}
+
+lm_imc_brozek <- lm(formula = fat_Brozek ~ imc,
+                    data = fat_dat)
+
+summary(lm_imc_brozek)
+
+```
+
+Estimando intervalo de confiança
+
+``` {r confint_fat_Brozek }
+
+confint(lm_imc_brozek)
+
+```
+
+A cada aumento de 1 unidade no IMC ocorre aumento de 1.55% na gordura corporal pelo índice Brozek. O intervalo de confiança é de 1.36 a 1.73.
+
+
+Estimando intervalo de predição
+
+```{r predict_fat_brozek}
+
+brozek_pred <- predict(lm_imc_brozek, interval = "predict")
+brozek_pred
+```
+
+Incluindo o intervalo de predição para cada observação do banco
+
+```{r binding_fat_dat}
+dat_brozek <-cbind(fat_dat, brozek_pred)
+```
+
+Gerando um gráfico com intervalo de confiança e intervalo de predição
+
+```{r regression_plot_fat_Brozek }
+
+plot_fat_Brozek <- ggplot(dat_brozek, aes(x = imc, y = fat_Brozek))+
+  geom_point() + 
+  geom_smooth (method = "lm",)+
+  scale_x_continuous("IMC") +
+  scale_y_continuous("Gordura pelo índice Brozek") +
+  theme_minimal() +
+  geom_line(aes(y = lwr), col = "coral2", linetype = "dashed") +   geom_line(aes(y = upr), col = "coral2", linetype = "dashed")
+
+plot_fat_Brozek
+```
+
+Gerando um modelo para predizer a gordura segundo Siri conforme o IMC
+
+```{r regressao_linear_fat_Siri }
+
+lm_imc_siri <- lm(formula = fat_Siri  ~ imc,
+                    data = fat_dat)
+
+summary(lm_imc_siri)
+
+```
+
+Gerando intervalo de confiança para os parâmetros estimados
+
+``` {r confint_fat_siri }
+
+confint(lm_imc_siri)
+
+```
+
+Para o aumento de 1 ponto no IMC ocorre  aumento de 1.7% (95%IC 1.5-1.86) na gordura corporal. O modelo explica 52% da variabilidade da gordura corporal.
+
+
+Gerando um intervalo de predição para cada observação do banco na variável fat_siri
+
+```{r predict_fat_siri}
+
+siri_pred <- predict(lm_imc_siri, interval = "predict")
+siri_pred
+
+```
+
+
+Incluindo o intervalo de predição para cada observação do banco
+
+```{r binding_fat_siri}
+
+dat_siri <-cbind(fat_dat, siri_pred)
+
+```
+
+Gerando gráfico com intervalo de confiança e intervalo de predição
+
+```{r regression_plot_fat_siri }
+
+plot_fat_siri <- ggplot(dat_siri, aes(x = imc, y = fat_Siri))+
+  geom_point() + 
+  geom_smooth (method = "lm",)+
+  scale_x_continuous("IMC")+
+  scale_y_continuous("Gordura conforme Siri")+
+  theme_minimal() +
+  geom_line(aes(y = lwr), col = "coral2", linetype = "dashed") +   geom_line(aes(y = upr), col = "coral2", linetype = "dashed")
+
+plot_fat_siri
+```
+
+
+
+# Anscombe dataset
+
+## Famoso banco de dados criado por Francis Anscombe com propriedades numéricas idênticas (estatísticas resumo e linhas de regressão), mas diferentes formas funcionais 
+
+Esse banco está disponível no R, basta chamá-lo 
+
+```{r anscombe_dataset}
+
+anscombe_dataset <- data("anscombe")
+
+```
+
+Estatísticas descritivas
+
+```{r anscombe_descriptives}
+
+compare_anscombe <- compareGroups(data = anscombe, ~ x1+
+                                     x2+
+                                     x3+
+                                     x4)
+
+createTable(compare_anscombe)
+```
+
+Criando gráfico de dispersão para os 4 bancos dentro de Anscombe
+
+Banco 1
+
+```{r anscombe_scatter_x1 }
+
+x1_scatter <- ggplot(anscombe, aes(x = x1, y = y1))+
+  geom_point() +
+  theme_minimal()+
+  geom_smooth(method = "lm", se = FALSE)
+
+x1_scatter
+```
+
+Banco 2
+
+```{r anscombe_scatter_x2 }
+
+x2_scatter <- ggplot(anscombe, aes(x = x2, y = y2))+
+  geom_point() +
+  theme_minimal() +
+  geom_smooth(method = "lm", se = FALSE)
+
+x2_scatter
+```
+
+Banco 3
+
+```{r anscombe_scatter_x3 }
+
+x3_scatter <- ggplot(anscombe, aes(x = x3, y = y3))+
+  geom_point() +
+  theme_minimal() +
+  geom_smooth(method = "lm", se = FALSE)
+
+x3_scatter
+```
+
+Banco 4
+
+```{r anscombe_scatter_x4 }
+
+x4_scatter <- ggplot(anscombe, aes(x = x4, y = y4))+
+  geom_point() +
+  theme_minimal() +
+  geom_smooth(method = "lm", se = FALSE)
+
+x4_scatter
+```
+
