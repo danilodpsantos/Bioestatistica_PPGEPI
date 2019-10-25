@@ -50,9 +50,9 @@ tabela_suwit
 
 ```
 
-#### Segundo passo: verificar linearidade com gráfico de dispersão. Identificar pontos
+#### Segundo passo: verificar linearidade com gráfico de dispersão e identificar pontos
 
-Gráfico de dispersão
+1) Gráfico de dispersão
 
 ```{r suwit_scatter }
 
@@ -65,7 +65,7 @@ suwit_scatter <- ggplot(suwit, aes(x = vermes, y = perda_sangue))+
 suwit_scatter
 ```
 
-Identificando pontos: qual o ID do ponto mais extremo na vertical?
+2) Identificando pontos: qual o ID do ponto mais extremo na vertical?
 
 ```{r outlier_na_vertical, echo=TRUE}
 
@@ -74,7 +74,9 @@ suwit %>%
 
 ```
 
+#### Terceiro passo: estimar modelo
 
+Modelo liner para perda de sangue em função de número de vermes
 
 ```{r suwit_regression}
 
@@ -85,25 +87,47 @@ summary(lm_suwit)
 
 ```
 
+Gerando intervalo de confiança para os parâmetros estimados
+
+Intervalo de confiança: estima quanto, em média, é a perda sanguínea de um grupo de pacientes com determinado número de vermes
+
 ``` {r confint_suwit }
 
 confint(lm_suwit)
 
 ```
 
-A cada aumento 1 verme, ocorre um aumento de 0.04 (95%IC 0.026 - 0.056), sendo que 71,6% da variabilidade da perda total de sangue decorre do aumento do número de vermes.
+A cada aumento de 1 verme, ocorre um aumento de 0.04 (95%IC 0.026 - 0.056) na perda de sangue, sendo que 71,6% (Multiple R-squared) da variabilidade da perda de sangue em relação à perda média da amostra é explicada pelo aumento do número de vermes.
 
 
+Estimando intervalo de predição para cada observação do banco
+
+Intervalo de predição: prediz a perda de sangue para um paciente que apresenta determinado número de vermes
 
 ``` {r confidence_prediction_suwit }
 
 suwit_pred <- predict(lm_suwit, interval = 'predict')
 
+suwit_pred
+```
+
+Incluindo o intervalo de predição para cada observação do banco
+
+``` {r merging_columns}
+
 suwit <- cbind(suwit, suwit_pred)
+
+```
+
+Gerando um gráfico contendo intervalo de confiança e intervalo de predição
+
+``` {r full_plot_suwit}
 
 suwit_pred_plot <- ggplot(suwit, aes(x = vermes, y = perda_sangue)) +
                                  geom_point() +
                                  geom_smooth(method = "lm") +
+                                 scale_x_continuous("Número de vermes") +
+                                 scale_y_continuous("Perda de sangue por um dia") +
                                  theme_minimal() +
                                  geom_line(aes(y = lwr), col = "coral2", linetype = "dashed") +
                                  geom_line(aes(y = upr), col = "coral2", linetype = "dashed") +
