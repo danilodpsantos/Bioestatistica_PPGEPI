@@ -87,9 +87,12 @@ summary(lm_suwit)
 
 ```
 
-Gerando intervalo de confiança para os parâmetros estimados
+Além da estimativa de B0 / intercepto (Intercept) e B1/ inclinação (vermes), também observamos o resultado de um teste de significância do preditor B1 (Pr(>|t|)).
+O coeficiente angular da reta da amostra (b= 0.04092) é significativamente diferente de zero, sendo o p-valor do teste 6.99e-05 ***
+O coeficiente de determinação (Multiple R-squared) é 0.716, indicando que 71,6% da variabilidade da perda de sangue (o quanto varia em relação ao valor de perda média da amostra) é explicada pelo aumento do número de vermes.
 
-Intervalo de confiança: estima quanto, em média, é a perda sanguínea de um grupo de pacientes com determinado número de vermes
+
+Gerando intervalo de confiança para os parâmetros estimados. O intervalo de confiança estima quanto, em média, é a perda sanguínea de um grupo de pacientes com determinado número de vermes
 
 ``` {r confint_suwit }
 
@@ -97,12 +100,10 @@ confint(lm_suwit)
 
 ```
 
-A cada aumento de 1 verme, ocorre um aumento de 0.04 (95%IC 0.026 - 0.056) na perda de sangue, sendo que 71,6% (Multiple R-squared) da variabilidade da perda de sangue em relação à perda média da amostra é explicada pelo aumento do número de vermes.
+A cada aumento de 1 verme, ocorre um aumento de 0.04 (95%IC 0.026 - 0.056) na perda de sangue.
 
 
-Estimando intervalo de predição para cada observação do banco
-
-Intervalo de predição: prediz a perda de sangue para um paciente que apresenta determinado número de vermes
+Estimando intervalo de predição para cada observação do banco. O intervalo de predição prediz a perda de sangue para um paciente que apresenta determinado número de vermes
 
 ``` {r confidence_prediction_suwit }
 
