@@ -269,6 +269,8 @@ plot_fat_Brozek <- ggplot(dat_brozek, aes(x = imc, y = fat_Brozek))+
 plot_fat_Brozek
 ```
 
+Gerando um modelo para predizer a gordura segundo Siri conforme o IMC
+
 ```{r regressao_linear_fat_Siri }
 
 lm_imc_siri <- lm(formula = fat_Siri  ~ imc,
@@ -278,6 +280,8 @@ summary(lm_imc_siri)
 
 ```
 
+Gerando intervalo de confiança para os parâmetros estimados
+
 ``` {r confint_fat_siri }
 
 confint(lm_imc_siri)
@@ -286,18 +290,34 @@ confint(lm_imc_siri)
 
 Para o aumento de 1 ponto no IMC ocorre  aumento de 1.7% (95%IC 1.5-1.86) na gordura corporal. O modelo explica 52% da variabilidade da gordura corporal.
 
+
+Gerando um intervalo de predição para cada observação do banco na variável fat_siri
+
 ```{r predict_fat_siri}
 
 siri_pred <- predict(lm_imc_siri, interval = "predict")
+siri_pred
+
+```
+
+
+Incluindo o intervalo de predição para cada observação do banco
+
+```{r binding_fat_siri}
 
 dat_siri <-cbind(fat_dat, siri_pred)
+
 ```
+
+Gerando gráfico com intervalo de confiança e intervalo de predição
 
 ```{r regression_plot_fat_siri }
 
 plot_fat_siri <- ggplot(dat_siri, aes(x = imc, y = fat_Siri))+
   geom_point() + 
   geom_smooth (method = "lm",)+
+  scale_x_continuous("IMC")+
+  scale_y_continuous("Gordura conforme Siri")+
   theme_minimal() +
   geom_line(aes(y = lwr), col = "coral2", linetype = "dashed") +   geom_line(aes(y = upr), col = "coral2", linetype = "dashed")
 
