@@ -19,18 +19,21 @@ library("compareGroups")
 library("ggplot2")
 library("haven")
 library("ggpubr")
+library("dplyr")
 
 ```
 
 # Suwit dataset
 
-## Estuda da relação entre infecção por ancilóstomo e perda de sangue. Tailândia 1970
+## Estudo da relação entre infecção por ancilóstomo e perda de sangue. Tailândia 1970
 
 ```{r carregando_suwit}
 
 suwit <- read_sav("Bancos/Suwit.sav")
 
 ```
+
+#### Primeiro passo: verificar o banco
 
 ```{r descritiva_suwit}
 
@@ -47,15 +50,31 @@ tabela_suwit
 
 ```
 
+#### Segundo passo: verificar linearidade com gráfico de dispersão. Identificar pontos
+
+Gráfico de dispersão
 
 ```{r suwit_scatter }
 
 suwit_scatter <- ggplot(suwit, aes(x = vermes, y = perda_sangue))+
   geom_point() +
+  scale_x_continuous("Número de vermes") +
+  scale_y_continuous("Perda de sangue por um dia") +
   theme_minimal()
 
 suwit_scatter
 ```
+
+Identificando pontos: qual o ID do ponto mais extremo na vertical?
+
+```{r outlier_na_vertical, echo=TRUE}
+
+suwit %>%
+  filter(perda_sangue>75, vermes<1500)
+
+```
+
+
 
 ```{r suwit_regression}
 
@@ -289,3 +308,4 @@ x4_scatter <- ggplot(anscombe, aes(x = x4, y = y4))+
 
 x4_scatter
 ```
+
