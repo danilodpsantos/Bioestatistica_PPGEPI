@@ -328,13 +328,17 @@ plot_fat_siri
 
 # Anscombe dataset
 
-## 4 bancos com formas funcionais diferentes mas estatísticas resumo e linhas de regressão idênticas
+## Famoso banco de dados criado por Francis Anscombe com propriedades numéricas idênticas (estatísticas resumo e linhas de regressão), mas diferentes formas funcionais 
+
+Esse banco está disponível no R, basta chamá-lo 
 
 ```{r anscombe_dataset}
 
 anscombe_dataset <- data("anscombe")
 
 ```
+
+Estatísticas descritivas
 
 ```{r anscombe_descriptives}
 
@@ -346,6 +350,10 @@ compare_anscombe <- compareGroups(data = anscombe, ~ x1+
 createTable(compare_anscombe)
 ```
 
+Criando gráfico de dispersão para os 4 bancos dentro de Anscombe
+
+Banco 1
+
 ```{r anscombe_scatter_x1 }
 
 x1_scatter <- ggplot(anscombe, aes(x = x1, y = y1))+
@@ -356,6 +364,8 @@ x1_scatter <- ggplot(anscombe, aes(x = x1, y = y1))+
 x1_scatter
 ```
 
+Banco 2
+
 ```{r anscombe_scatter_x2 }
 
 x2_scatter <- ggplot(anscombe, aes(x = x2, y = y2))+
@@ -365,6 +375,9 @@ x2_scatter <- ggplot(anscombe, aes(x = x2, y = y2))+
 
 x2_scatter
 ```
+
+Banco 3
+
 ```{r anscombe_scatter_x3 }
 
 x3_scatter <- ggplot(anscombe, aes(x = x3, y = y3))+
@@ -374,6 +387,9 @@ x3_scatter <- ggplot(anscombe, aes(x = x3, y = y3))+
 
 x3_scatter
 ```
+
+Banco 4
+
 ```{r anscombe_scatter_x4 }
 
 x4_scatter <- ggplot(anscombe, aes(x = x4, y = y4))+
