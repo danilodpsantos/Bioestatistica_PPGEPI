@@ -76,7 +76,7 @@ suwit %>%
 
 #### Terceiro passo: estimar modelo
 
-Modelo liner para perda de sangue em função de número de vermes
+O modelo de regressão linear simples para a perda de sangue da amostra em função da variável preditora "número de vermes" pode ser visualizado como uma linha reta no gráfico, estimada pelo método dos mínimos quadrados, que corresponde à melhor representação de uma linha que percorre os dados tentando minimizar a distância entre a linha e as observações (pontos)
 
 ```{r suwit_regression}
 
