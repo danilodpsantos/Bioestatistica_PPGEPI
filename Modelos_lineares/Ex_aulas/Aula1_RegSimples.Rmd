@@ -261,6 +261,8 @@ Gerando um gráfico com intervalo de confiança e intervalo de predição
 plot_fat_Brozek <- ggplot(dat_brozek, aes(x = imc, y = fat_Brozek))+
   geom_point() + 
   geom_smooth (method = "lm",)+
+  scale_x_continuous("IMC") +
+  scale_y_continuous("Gordura pelo índice Brozek") +
   theme_minimal() +
   geom_line(aes(y = lwr), col = "coral2", linetype = "dashed") +   geom_line(aes(y = upr), col = "coral2", linetype = "dashed")
 
