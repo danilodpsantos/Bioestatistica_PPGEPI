@@ -3,9 +3,9 @@ title: "Modelos lineares aula 1"
 author: "Danilo de Paula Santos/Gabriela Wunsch Lopes"
 date: "17/10/2019"
 output:
+  html_document: default
   pdf_document:
     latex_engine: pdflatex
-  html_document: default
 ---
 
 ```{r preparacao_do_R, message=FALSE, warning=FALSE}
@@ -20,7 +20,7 @@ library("ggplot2")
 library("haven")
 library("ggpubr")
 library("dplyr")
-
+library(knitr)
 ```
 
 # Suwit dataset
@@ -158,7 +158,7 @@ fat_dat <- read_sav("Bancos/fat_dat.sav")
 
 ```
 
-Corrigindo os erros de digitação:
+#### Primeiro passo: verificar o banco e corrigir os erros de digitação:
 
 - The body densities for cases 48, 76, and 96, for instance, each seem to have one digit in error as can be seen from the two body fat percentage values.
 - Case 42) over 200 pounds in weight who is less than 3 feet tall (the height should presumably be 69.5 inches, not 29.5 inches)!
@@ -177,6 +177,7 @@ fat_dat$densidade <- ifelse( fat_dat$numero == 96, 1.0591, fat_dat$densidade)
 
 ```
 
+
 ```{r descritivas_fat_dat}
 compare_fat <- compareGroups( ~ ., data = fat_dat)
 
@@ -188,6 +189,7 @@ summary(compare_fat)
 
 tabela_fat <- createTable(compare_fat)
 
+tabela_fat
 ```
 
 ```{r normalidade_fat_dat }
@@ -195,6 +197,10 @@ tabela_fat <- createTable(compare_fat)
 plot(compare_fat)
 
 ```
+
+#### Segundo passo: verificar linearidade com gráfico de dispersão. Identificar pontos
+
+1) Gráfico de dispersão
 
 ```{r dispersao_fat_Brozek }
 
@@ -205,6 +211,15 @@ disp_fat_Brozek<- ggplot(fat_dat, aes(x = imc, y = fat_Brozek))+
 disp_fat_Brozek
 ```
 
+2) Identificando pontos outliers: outlier na horizontal
+
+```{r outlier_na_horizontal, echo=TRUE}
+fat_dat %>%
+  filter(imc>40)
+```
+
+#### Terceiro passo: estimar modelo
+
 ```{r lm_fat_Brozek}
 
 lm_imc_brozek <- lm(formula = fat_Brozek ~ imc,
@@ -213,6 +228,9 @@ lm_imc_brozek <- lm(formula = fat_Brozek ~ imc,
 summary(lm_imc_brozek)
 
 ```
+
+Estimando intervalo de confiança
+
 ``` {r confint_fat_Brozek }
 
 confint(lm_imc_brozek)
@@ -221,12 +239,22 @@ confint(lm_imc_brozek)
 
 A cada aumento de 1 unidade no IMC ocorre aumento de 1.55% na gordura corporal pelo índice Brozek. O intervalo de confiança é de 1.36 a 1.73.
 
+
+Estimando intervalo de predição
+
 ```{r predict_fat_brozek}
 
 brozek_pred <- predict(lm_imc_brozek, interval = "predict")
+brozek_pred
+```
 
+Incluindo o intervalo de predição para cada observação do banco
+
+```{r binding_fat_dat}
 dat_brozek <-cbind(fat_dat, brozek_pred)
 ```
+
+Gerando um gráfico com intervalo de confiança e intervalo de predição
 
 ```{r regression_plot_fat_Brozek }
 
@@ -247,6 +275,7 @@ lm_imc_siri <- lm(formula = fat_Siri  ~ imc,
 summary(lm_imc_siri)
 
 ```
+
 ``` {r confint_fat_siri }
 
 confint(lm_imc_siri)
