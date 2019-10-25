@@ -24,11 +24,11 @@ library("ggpubr")
 
 # Suwit dataset
 
-## Estuda da relação entre infecção por acilóstomo e perda de sangue. Tailândia 1970
+## Estuda da relação entre infecção por ancilóstomo e perda de sangue. Tailândia 1970
 
 ```{r carregando_suwit}
 
-suwit <- read_sav("C:/Users/00265021/Documents/Cadeiras/Modelos lineares/Suwit.sav")
+suwit <- read_sav("Bancos/Suwit.sav")
 
 ```
 
@@ -111,7 +111,7 @@ A faixa cinza corresponde ao intervalo de confiança e as linhas laranja são os
 
 ```{r carregando_fat_dat}
 
-fat_dat <- read_sav("C:/Users/00265021/Documents/Cadeiras/Modelos lineares/fat_dat.sav")
+fat_dat <- read_sav("Bancos/fat_dat.sav")
 
 ```
 
