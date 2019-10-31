@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<!-- saved from url=(0043)https://rpubs.com/iabrady/residual-analysis -->
+<html class="gr__rpubs_com"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>RPubs - Residual Analysis in Linear Regression</title>
+<link href="./RPubs_Residual_Analysis_Linear_Regression_files/application-0f4a38981ee7b1c077577f51e3f33627.css" media="all" rel="stylesheet" type="text/css">
+<link href="./RPubs_Residual_Analysis_Linear_Regression_files/show-060a5f99c65c577dbbcb45abae19cefc.css" media="all" rel="stylesheet" type="text/css">
+<script type="text/javascript" async="" src="./RPubs_Residual_Analysis_Linear_Regression_files/ga.js.download"></script><script src="./RPubs_Residual_Analysis_Linear_Regression_files/application-b0fb18b4aea86fb908a4b406708b8b1b.js.download" type="text/javascript"></script>
+<script type="text/javascript" src="./RPubs_Residual_Analysis_Linear_Regression_files/uao6mzv.js.download"></script>
+<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+<script>
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-20375833-2']);
+  _gaq.push(['_setDomainName', 'rpubs.com']);
+  _gaq.push(['_trackPageview']);
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+<script type="text/javascript" async="" src="./RPubs_Residual_Analysis_Linear_Regression_files/embed.js.download"></script><link rel="prefetch" as="style" href="https://c.disquscdn.com/next/embed/styles/lounge.953a2bd009935f47a8e815c3ee2bfc5a.css"><link rel="prefetch" as="script" href="https://c.disquscdn.com/next/embed/common.bundle.3ec876f0dd63f3552e71b17b94e297ec.js"><link rel="prefetch" as="script" href="https://c.disquscdn.com/next/embed/lounge.bundle.1ccff00c6929abd8fb1cc125345194a6.js"><link rel="prefetch" as="script" href="https://disqus.com/next/config.js"></head>
+<body class="show-pub show-toolbars" data-gr-c-s-loaded="true">
+<div class="modal fade" id="login" style="display: none">
+<div class="modal-header">
+<h1>Sign In</h1>
+</div>
+<div class="modal-body">
+<div class="alert" id="login_message" style="display: none"></div>
+<form accept-charset="UTF-8" action="https://rpubs.com/auth/login" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="✓"><input name="authenticity_token" type="hidden" value="sawSNob/oUdu1HjcZxrw9QpyRGOSir3CsxRS7O3yvTo="></div>
+<input name="return_url" type="hidden">
+<div class="fieldset">
+<div class="control-group">
+<label class="control-label" for="login_username">Username or Email</label>
+<div class="controls">
+<input class="input-xlarge" id="login_username" name="username" type="text">
+</div>
+</div>
+<div class="control-group">
+<label class="control-label" for="login_password">Password</label>
+<div class="controls">
+<input class="input-xlarge" id="login_password" name="password" type="password">
+</div>
+</div>
+</div>
+</form>
+
+
+</div>
+<div class="modal-footer">
+<button class="btn btn-primary" id="login-modal-submit">Sign In</button>
+<button class="btn" id="login-modal-cancel">Cancel</button>
+</div>
+</div>
+<div class="navbar-inner" id="pageheader">
+<div id="branding">
+<h1 id="logo">
+<a href="https://rpubs.com/"><span id="R">R</span>Pubs
+</a>
+</h1>
+<span id="tagline">brought to you by RStudio</span>
+</div>
+<div id="identity">
+<div class="btn-group">
+<a class="btn btn-inverse btn-small pull-right" href="https://rpubs.com/iabrady/residual-analysis#" onclick="rpubs_showLogin(); return false">
+Sign in
+</a>
+<a class="btn btn-inverse btn-small pull-right" href="https://rpubs.com/users/new">
+Register
+</a>
+</div>
+</div>
+</div>
+<div id="pagebody">
+<div id="payload">
+<iframe src="./RPubs_Residual_Analysis_Linear_Regression_files/374777_b715dd9923ab471288cc4cc029c1d323.html"></iframe>
+<button class="btn btn-tiny" id="btn-show-toolbars">
+<i class="icon-resize-small"></i>
+</button>
+</div>
+<div class="navbar navbar-fixed-bottom" id="pagefooter">
+<div class="navbar-inner">
+<div class="container-fluid">
+<ul class="nav" id="pubmeta">
+<li id="pubtitle">
+<label>Residual Analysis in Linear Regression</label>
+</li>
+<li id="pubauthor">
+<a href="https://rpubs.com/iabrady">by Ingrid Brady</a>
+</li>
+<li id="pubtime">
+<label>
+Last updated
+<time datetime="2018-03-29T06:15:02+00:00">over 1 year ago</time>
+</label>
+</li>
+</ul>
+<ul class="nav pull-right">
+<li>
+<button class="btn btn-small btn-success" id="btn-comments">
+<i class="icon-comment icon-white"></i>
+<span id="comment-verb-hide">
+Hide
+</span>
+Comments
+<span id="comment-count">
+(–)
+</span>
+</button>
+<button class="btn btn-small btn-info" id="btn-share">
+<i class="icon-share icon-white"></i>
+Share
+</button>
+<button class="btn btn-small btn-inverse" id="btn-hide-toolbars">
+Hide Toolbars
+</button>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="modal fade hide" id="modal-share">
+<div class="modal-body">
+<btn class="close" data-dismiss="modal" type="button">×</btn>
+<h2 class="first">Post on:</h2>
+<p>
+<a class="btn btn-primary btn-large" href="https://twitter.com/intent/tweet?original_referer=http%3A%2F%2Frpubs.com%2Fiabrady%2Fresidual-analysis&amp;source=tweetbutton&amp;text=Residual%20Analysis%20in%20Linear%20Regression&amp;url=http%3A%2F%2Frpubs.com%2Fiabrady%2Fresidual-analysis" onclick="window.open(this.href, &#39;&#39;, &#39;menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=275,width=660&#39;);return false;">
+Twitter
+</a>
+<a class="btn btn-primary btn-large" href="https://www.facebook.com/sharer.php?u=http%3A%2F%2Frpubs.com%2Fiabrady%2Fresidual-analysis&amp;t=Residual%20Analysis%20in%20Linear%20Regression" onclick="window.open(this.href, &#39;&#39;, &#39;menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=350,width=660&#39;);return false;">
+Facebook
+</a>
+<a class="btn btn-primary btn-large" href="https://plus.google.com/share?url=http%3A%2F%2Frpubs.com%2Fiabrady%2Fresidual-analysis" onclick="window.open(this.href, &#39;&#39;, &#39;menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600&#39;);return false;">
+Google+
+</a>
+</p>
+<hr>
+<h3>Or copy &amp; paste this link into an email or IM:</h3>
+<input onclick="this.select()" readonly="readonly" value="http://rpubs.com/iabrady/residual-analysis">
+</div>
+</div>
+<script>
+  $('#btn-edit').click(function() {
+    location.href = "/iabrady/374777/edit";
+  });
+  $('#btn-delete').mouseover(function() {
+    $('#btn-delete').removeClass('btn-inverse').addClass('btn-danger');
+  });
+  $('#btn-delete').mouseout(function() {
+    $('#btn-delete').addClass('btn-inverse').removeClass('btn-danger');
+  });
+  $('#btn-hide-toolbars').click(function() {
+    $(document.body).addClass('hide-toolbars');
+    $(document.body).removeClass('show-toolbars');
+  });
+  $('#btn-show-toolbars').click(function() {
+    $(document.body).addClass('show-toolbars');
+    $(document.body).removeClass('hide-toolbars');
+  });
+  $('#btn-share').click(function() {
+    $('#modal-share').modal().css({
+      'margin-left': function () {
+        return -($(this).width() / 2);
+      }
+    });
+  });
+  $('#btn-comments').click(function() {
+    $(document.body).toggleClass('show-comments');
+  });
+  setInterval(function() {
+    // Poll for comment count. Barf.
+    var text = $('#dsq-num-posts').text();
+    if (text && /^\d+$/.test(text))
+      $('#comment-count').text('(' + text + ')');
+  }, 1000);
+</script>
+<div id="comment-wrapper">
+<div id="disqus_thread"><iframe id="dsq-app209" name="dsq-app209" allowtransparency="true" frameborder="0" scrolling="no" tabindex="0" title="Disqus" width="100%" src="./RPubs_Residual_Analysis_Linear_Regression_files/saved_resource.html" style="width: 1px !important; min-width: 100% !important; border: none !important; overflow: hidden !important; height: 1277px !important;" horizontalscrolling="no" verticalscrolling="no"></iframe></div>
+</div>
+
+</div>
+
+
+<iframe style="display: none;" src="./RPubs_Residual_Analysis_Linear_Regression_files/saved_resource(1).html"></iframe></body></html>
