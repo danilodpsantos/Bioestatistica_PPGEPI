@@ -401,3 +401,6 @@ x4_scatter <- ggplot(anscombe, aes(x = x4, y = y4))+
 x4_scatter
 ```
 
+# Diagnóstico em regressão linear simples
+
+
