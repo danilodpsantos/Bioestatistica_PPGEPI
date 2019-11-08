@@ -17,10 +17,11 @@ output:
 
 library("compareGroups")
 library("ggplot2")
+library("")
 library("haven")
 library("ggpubr")
 library("dplyr")
-library(knitr)
+library("knitr")
 ```
 
 ## Suwit dataset
@@ -401,3 +402,9 @@ x4_scatter
 # Diagnóstico em regressão linear simples
 
 
+```{r residuals_lm_imc_siri }
+
+ggplot(lm_imc_siri, aes(x = .fitted, y = .resid)) + geom_point()
+
+
+```
