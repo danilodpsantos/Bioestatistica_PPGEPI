@@ -3,9 +3,9 @@ title: "Regressão simples"
 author: "Danilo de Paula Santos/Gabriela Wunsch Lopes"
 date: "17/10/2019"
 output:
-  html_document: default
   pdf_document:
     latex_engine: pdflatex
+  html_document: default
 ---
 
 ```{r preparacao_do_R, message=FALSE, warning=FALSE}
@@ -17,15 +17,16 @@ output:
 
 library("compareGroups")
 library("ggplot2")
+library("")
 library("haven")
 library("ggpubr")
 library("dplyr")
-library(knitr)
+library("knitr")
 ```
 
-# Suwit dataset
+## Suwit dataset
 
-## Estudo da relação entre infecção por ancilóstomo e perda de sangue. Tailândia 1970
+### Estudo da relação entre infecção por ancilóstomo e perda de sangue. Tailândia 1970
 
 ```{r carregando_suwit}
 
@@ -33,7 +34,7 @@ suwit <- read_sav("Bancos/Suwit.sav")
 
 ```
 
-#### Primeiro passo: verificar o banco
+##### Primeiro passo: verificar o banco
 
 ```{r descritiva_suwit}
 
@@ -50,7 +51,7 @@ tabela_suwit
 
 ```
 
-#### Segundo passo: verificar linearidade com gráfico de dispersão e identificar pontos
+##### Segundo passo: verificar linearidade com gráfico de dispersão e identificar pontos
 
 1) Gráfico de dispersão
 
@@ -74,7 +75,7 @@ suwit %>%
 
 ```
 
-#### Terceiro passo: estimar modelo
+##### Terceiro passo: estimar modelo
 
 O modelo de regressão linear simples para a perda de sangue da amostra em função da variável preditora "número de vermes" pode ser visualizado como uma linha reta no gráfico, estimada pelo método dos mínimos quadrados, que corresponde à melhor representação de uma linha que percorre os dados tentando minimizar a distância entre a linha e as observações (pontos)
 
@@ -109,7 +110,6 @@ Estimando intervalo de predição para cada observação do banco. O intervalo d
 
 suwit_pred <- predict(lm_suwit, interval = 'predict')
 
-suwit_pred
 ```
 
 Incluindo o intervalo de predição para cada observação do banco
@@ -142,15 +142,13 @@ suwit_pred_plot <- ggplot(suwit, aes(x = vermes, y = perda_sangue)) +
   
 suwit_pred_plot
                     
-
-
 ```
 
 A faixa cinza corresponde ao intervalo de confiança e as linhas laranja são os limites do intervalo de predição.
 
-# Fat_dat dataset
+## Fat_dat dataset
 
-## Estudo Fat_dat "Fitting Percentage of Body Fat to Simple Body Measurements"
+### Estudo Fat_dat "Fitting Percentage of Body Fat to Simple Body Measurements"
 
 
 ```{r carregando_fat_dat}
@@ -159,7 +157,7 @@ fat_dat <- read_sav("Bancos/fat_dat.sav")
 
 ```
 
-#### Primeiro passo: verificar o banco e corrigir os erros de digitação:
+##### Primeiro passo: verificar o banco e corrigir os erros de digitação:
 
 - The body densities for cases 48, 76, and 96, for instance, each seem to have one digit in error as can be seen from the two body fat percentage values.
 - Case 42) over 200 pounds in weight who is less than 3 feet tall (the height should presumably be 69.5 inches, not 29.5 inches)!
@@ -199,7 +197,7 @@ plot(compare_fat)
 
 ```
 
-#### Segundo passo: verificar linearidade com gráfico de dispersão. Identificar pontos
+##### Segundo passo: verificar linearidade com gráfico de dispersão. Identificar pontos
 
 1) Gráfico de dispersão
 
@@ -219,7 +217,7 @@ fat_dat %>%
   filter(imc>40)
 ```
 
-#### Terceiro passo: estimar modelo
+##### Terceiro passo: estimar modelo
 
 ```{r lm_fat_Brozek}
 
@@ -246,7 +244,7 @@ Estimando intervalo de predição
 ```{r predict_fat_brozek}
 
 brozek_pred <- predict(lm_imc_brozek, interval = "predict")
-brozek_pred
+
 ```
 
 Incluindo o intervalo de predição para cada observação do banco
@@ -297,7 +295,7 @@ Gerando um intervalo de predição para cada observação do banco na variável 
 ```{r predict_fat_siri}
 
 siri_pred <- predict(lm_imc_siri, interval = "predict")
-siri_pred
+
 
 ```
 
@@ -327,9 +325,9 @@ plot_fat_siri
 
 
 
-# Anscombe dataset
+## Anscombe dataset
 
-## Famoso banco de dados criado por Francis Anscombe com propriedades numéricas idênticas (estatísticas resumo e linhas de regressão), mas diferentes formas funcionais 
+### Famoso banco de dados criado por Francis Anscombe com propriedades numéricas idênticas (estatísticas resumo e linhas de regressão), mas diferentes formas funcionais 
 
 Esse banco está disponível no R, basta chamá-lo 
 
@@ -403,3 +401,13 @@ x4_scatter
 
 # Diagnóstico em regressão linear simples
 
+<<<<<<< HEAD
+=======
+
+```{r residuals_lm_imc_siri }
+
+ggplot(lm_imc_siri, aes(x = .fitted, y = .resid)) + geom_point()
+
+
+```
+>>>>>>> 59e148d4b9e31753b1225ca223e3855ef3eb9299
