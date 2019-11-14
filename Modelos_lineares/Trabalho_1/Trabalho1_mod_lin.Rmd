@@ -104,7 +104,7 @@ __a) Explore a relação entre dollars e as outras variáveis independentes (exc
 #Função que fixa o banco como dados e o y como dólares para criar um scatterplot
 
 
-dollar_plot <- function(data = dados, x_var = var, y_var = "dollars"){
+dollar_plot <- function(data, x_var, y_var ){
   
   
 
@@ -120,77 +120,206 @@ dollar_plot <- function(data = dados, x_var = var, y_var = "dollars"){
 ```
 
 
-```{r scat_dol_incid}
+```{r lm_dol_incid}
 
-ggplot(data = dados,
-         aes(x = incid,
-             y = dollars)) +
-    geom_point()
+lm_dol_incid <- lm(formula = dollars ~ incid,
+                    data = dados)
+
+summary(lm_dol_incid)
 
 
 ```
 
+```{r scat_dol_incid}
 
 
+
+
+scat_dol_incid <- ggplot(dados, aes(x = incid, y = dollars)) +
+                                 geom_point() +
+                                 geom_smooth(method = "lm") +
+                                 scale_x_continuous("Incidence per 1000") +
+                                 scale_y_continuous("thousands of NIH research dollars") +
+                                 theme_minimal() +
+  labs(title = paste("Adj R2 = ",signif(summary(lm_dol_incid)$adj.r.squared, 5),
+                         "Intercept =",signif(lm_dol_incid$coef[[1]],5 ),
+                         " Slope =",signif(lm_dol_incid$coef[[2]], 5),
+                         " p =",signif(summary(lm_dol_incid)$coef[2,4], 5)))
+
+scat_dol_incid
+```
+
+
+```{r lm_dol_preval}
+
+lm_dol_preval <- lm(formula = dollars ~ preval,
+                    data = dados)
+
+summary(lm_dol_preval)
+
+
+```
 
 ```{r scat_dol_preval}
 
-ggplot(data = dados,
-         aes(x = preval,
-             y = dollars)) +
-    geom_point()
+scat_dol_preval <- ggplot(dados, aes(x = incid, y = dollars)) +
+                                 geom_point() +
+                                 geom_smooth(method = "lm") +
+                                 scale_x_continuous("Incidence per 1000") +
+                                 scale_y_continuous("thousands of NIH research dollars") +
+                                 theme_minimal() +
+  labs(title = paste("Adj R2 = ",signif(summary(lm_dol_preval)$adj.r.squared, 5),
+                         "Intercept =",signif(lm_dol_preval$coef[[1]],5 ),
+                         " Slope =",signif(lm_dol_preval$coef[[2]], 5),
+                         " p =",signif(summary(lm_dol_preval)$coef[2,4], 5)))
+
+scat_dol_preval
 
 
 ```
 
+```{r lm_dol_mort}
 
-```{r scat_dol_hospdays}
+lm_dol_mort <- lm(formula = dollars ~ mort,
+                    data = dados)
 
-ggplot(data = dados,
-         aes(x = hospdays,
-             y = dollars)) +
-    geom_point()
-
+summary(lm_dol_mort)
 
 
 ```
-
-
 
 ```{r scat_dol_mort}
 
-ggplot(data = dados,
-         aes(x = mort,
-             y = dollars)) +
-    geom_point()
+scat_dol_mort <- ggplot(dados, aes(x = mort, y = dollars)) +
+                                 geom_point() +
+                                 geom_smooth(method = "lm") +
+                                 scale_x_continuous("Mortality per 1000") +
+                                 scale_y_continuous("thousands of NIH research dollars") +
+                                 theme_minimal() +
+  labs(title = paste("Adj R2 = ",signif(summary(lm_dol_mort)$adj.r.squared, 5),
+                         "Intercept =",signif(lm_dol_mort$coef[[1]],5 ),
+                         " Slope =",signif(lm_dol_mort$coef[[2]], 5),
+                         " p =",signif(summary(lm_dol_mort)$coef[2,4], 5)))
 
+scat_dol_mort
+
+
+```
+
+```{r lm_dol_hospdays}
+
+lm_dol_hospdays <- lm(formula = dollars ~ hospdays,
+                    data = dados)
+
+summary(lm_dol_hospdays)
+
+
+```
+
+```{r scat_dol_hospdays}
+
+scat_dol_hospdays <- ggplot(dados, aes(x = hospdays, y = dollars)) +
+                                 geom_point() +
+                                 geom_smooth(method = "lm") +
+                                 scale_x_continuous("Thousands of hospital days") +
+                                 scale_y_continuous("thousands of NIH research dollars") +
+                                 theme_minimal() +
+  labs(title = paste("Adj R2 = ",signif(summary(lm_dol_hospdays)$adj.r.squared, 5),
+                         "Intercept =",signif(lm_dol_hospdays$coef[[1]],5 ),
+                         " Slope =",signif(lm_dol_hospdays$coef[[2]], 5),
+                         " p =",signif(summary(lm_dol_hospdays)$coef[2,4], 5)))
+
+scat_dol_hospdays
+
+
+```
+```{r lm_dol_yrslost}
+
+lm_dol_yrslost <- lm(formula = dollars ~ yrslost,
+                    data = dados)
+
+summary(lm_dol_yrslost)
 
 ```
 
 ```{r scat_dol_yrslost}
 
-ggplot(data = dados,
-         aes(x = yrslost,
-             y = dollars)) +
-    geom_point()
+scat_dol_yrslost <- ggplot(dados, aes(x = yrslost, y = dollars)) +
+                                 geom_point() +
+                                 geom_smooth(method = "lm") +
+                                 scale_x_continuous("Thousands of years of life lost") +
+                                 scale_y_continuous("thousands of NIH research dollars") +
+                                 theme_minimal() +
+  labs(title = paste("Adj R2 = ",signif(summary(lm_dol_yrslost)$adj.r.squared, 5),
+                         "Intercept =",signif(lm_dol_yrslost$coef[[1]],5 ),
+                         " Slope =",signif(lm_dol_yrslost$coef[[2]], 5),
+                         " p =",signif(summary(lm_dol_yrslost)$coef[2,4], 5)))
 
+scat_dol_yrslost
+
+
+```
+
+```{r lm_dol_disabil}
+
+lm_dol_disabil <- lm(formula = dollars ~ disabil,
+                    data = dados)
+
+summary(lm_dol_disabil)
 
 ```
 
 ```{r scat_dol_disabil}
 
-ggplot(data = dados,
-         aes(x = disabil,
-             y = dollars)) +
-    geom_point()
+scat_dol_disabil <- ggplot(dados, aes(x = disabil, y = dollars)) +
+                                 geom_point() +
+                                 geom_smooth(method = "lm") +
+                                 scale_x_continuous("Thousands of disability-adjusted life years") +
+                                 scale_y_continuous("thousands of NIH research dollars") +
+                                 theme_minimal() +
+  labs(title = paste("Adj R2 = ",signif(summary(lm_dol_disabil)$adj.r.squared, 5),
+                         "Intercept =",signif(lm_dol_disabil$coef[[1]],5 ),
+                         " Slope =",signif(lm_dol_disabil$coef[[2]], 5),
+                         " p =",signif(summary(lm_dol_disabil)$coef[2,4], 5)))
+
+scat_dol_disabil
+
+```
+
+
+
+__b) Construa manualmente um modelo que você julga que melhor explica o desfecho.__ 
+
+```{r mr_dol_1}
+
+mr_dol_1 <- lm(data = dados, formula = (dollars ~ preval + hospdays + mort + yrslost + disabil))
+  
+
+summary(mr_dol_1)
+
+```
+
+```{r scatter_yrslost_mort}
+
+ggplot(dados, aes(x = yrslost, y = mort)) +
+                                 geom_point() +
+                                 scale_x_continuous("Thousands of years of life lost") +
+                                 scale_y_continuous("Mortality per 1000") +
+                                 theme_minimal()
 
 
 ```
 
-__b) Construa manualmente um modelo que você julga que melhor explica o desfecho.__ 
+```{r scatter_yrslost_DALY}
+
+ggplot(dados, aes(x = yrslost, y = disabil)) +
+                                 geom_point() +
+                                 scale_x_continuous("Thousands of years of life lost") +
+                                 scale_y_continuous("Thousands of disability-adjusted life years") +
+                                 theme_minimal()
 
 
-
+```
 
 
 __c) Faça o gráfico dos valores preditos versus os resíduos studentizados. Interprete os resultados.__
