@@ -403,4 +403,3 @@ x4_scatter
 
 # Diagnóstico em regressão linear simples
 
-
