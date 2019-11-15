@@ -321,19 +321,15 @@ As variáveis preditoras candidatas estão relacionadas a: 1) quantidade de pess
 
 Os 3 aspectos, segundo nossa hipótese, poderiam predizer o desfecho.
 
-No entanto, muitas das variáveis preditoras estão altamente correlacionadas entre si, de modo que não parece apropriado incluir todas no mesmo modelo.
+No entanto, muitas das variáveis preditoras estão altamente correlacionadas entre si, de modo que não parece apropriado incluir todas no mesmo modelo. Além disso, outro problema que temos é a ausência de certas informações do banco, faltando dados sobre prevalência e incidência para algumas doenças. Assim, o modelo estimado pode não ser válido para elas.
+
+Nosso intuito é estimar o modelo que melhor explique o desfecho contendo um preditor de cada grupo.
 
 
-Segundo o quadro teórico, excluímos as variáveis incidência (pois já está incluída na variável de prevalência) e a variável yrslost (pois já está incluída em DALYs).
-DALYs e hospdays são medidas de morbidade. Acreditamos que DALY é uma medida mais abrangente e excluímos hospdays.
-No entanto, nosso receio é de haver correlação entre mort e disabil, dado que os DALYs incluem morte em anos de vida perdidos.
-Assim, uma solução pode ser pegar apenas o componente de morbidade da medida DALY, criando a variável YLD = DALY - yrslost.
+Prevalência e incidência não apresentaram alta correlação com nenhum dos outros preditores, mas é possível que isso esteja mascarado pelos dados missing.
+As variáveis dos grupos "morte" e "morbidade" de menor correlação são yrslost e disabil. Como sabemos que disabil inclui yrslost, poderíamos comparar yrslost com seu complementar, YLD.
 
-Vamos ao modelo com preval, mort e YLD (descobrir como criar a nova variável)
 
-Ver multicolinearidade. 
-
-Outras ideias: modelo com yrslost dividido por mort (anos de vida perdidos em média por pessoa), prevalência da doença (medida de quantidade) e YLD dividido por prevalencia (anos vividos com incapacidade ajustados para prevalência da doença)
 
 ```{r manual_mrm_1}
 
