@@ -99,6 +99,19 @@ table_descr
 
 __a) Explore a relação entre dollars e as outras variáveis independentes (exceto disease e id).__ 
 
+```{r correlation_var_outcome}
+
+#Crio um objeto com as variáveis que quero correlacionar
+my_data <- dados[,c("dollars", "incid", "preval", "mort", "hospdays", "yrslost", "disabil")]
+
+#aplico a função de correlação, ignorando os valores missing (complete.obs)
+cor_matrix <- cor(my_data, use = "complete.obs")
+
+#arredondo para duas casas decimais
+round(cor_matrix,2)
+```
+
+
 ```{r scat_function}
 
 #Função que fixa o banco como dados e o y como dólares para criar um scatterplot
@@ -289,6 +302,9 @@ scat_dol_disabil
 
 
 __b) Construa manualmente um modelo que você julga que melhor explica o desfecho.__ 
+
+Acreditamos que investimento em pesquisa do NIH pode ser explicado pela morbidade e mortalidade relacionada à doença. Dessa forma, com exceção de incidência em 1990 (que está contida em prevalência de 1990), todas as variáveis preditoras poderiam ajudar a explicar o desfecho, pois se relacionam a morbidade ou mortalidade.
+
 
 ```{r mr_dol_1}
 
