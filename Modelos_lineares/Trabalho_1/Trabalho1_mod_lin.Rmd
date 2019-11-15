@@ -116,6 +116,15 @@ round(cor_matrix,2)
 ```
 
 ```{r correlation_plot}
+#Painel de 100 cores e matriz de correlação ordenada
+
+my_colors <- brewer.pal(5, "Spectral")
+my_colors <- colorRampPalette(my_colors)(100)
+
+ord <- order (cor_matrix[1, ])
+cor_matrix_ord <- cor_matrix[ord, ord]
+
+plotcorr(cor_matrix_ord, col = my_colors[cor_matrix_ord*50+50], mar = c(1, 1, 1, 1))
 
 #Não sei se ficou bom
 pairs( ~ dollars+incid+preval+ mort+ hospdays+ yrslost+ disabil, data = dados)
