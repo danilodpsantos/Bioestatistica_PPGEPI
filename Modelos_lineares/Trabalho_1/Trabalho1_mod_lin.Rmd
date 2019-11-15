@@ -309,17 +309,21 @@ scat_dol_disabil
 
 __b) Construa manualmente um modelo que você julga que melhor explica o desfecho.__ 
 
-Acreditamos que investimento em pesquisa do NIH pode ser explicado pela morbidade e mortalidade relacionada à doença. Dessa forma, com exceção de incidência em 1990 (que está contida em prevalência de 1990), todas as variáveis preditoras poderiam ajudar a explicar o desfecho, pois se relacionam a morbidade ou mortalidade.
+Acreditamos que investimento em pesquisa do NIH pode ser explicado pela quantidade de pessoas acometidas pela doença e sua morbidade e mortalidade. Todas as variáveis preditoras estão relacionadas a isso. No entanto, como vimos no passo anterior, muitas das variáveis preditoras estão altamente correlacionadas entre si, de modo que não parece apropriado incluir todas no mesmo modelo. 
+
+Dado que, isoladamente, nenhuma das variáveis preditoras está significativamente associada ao desfecho, fica difícil a decisão de quais delas excluir. Começamos excluindo "incidência em 1990", pois entendemos que está incluída na variável "prevalência em 1990". Além disso a variável de prevalência está mais correlacionada com o desfecho.
 
 
 ```{r mr_dol_1}
 
-mr_dol_1 <- lm(data = dados, formula = (dollars ~ preval + hospdays + mort + yrslost + disabil))
+mr_dol_1 <- lm(data = dados, formula = (dollars ~ preval + mort + hospdays+ yrslost + disabil))
   
 
 summary(mr_dol_1)
-
 ```
+
+Percebemos que houve mudanças importantes nos coeficientes do modelo linear multivariável comparado aos modelos lineares simples. As variáveis "mortalidade" e "anos de vida perdidos por morte prematura" passaram a ser estatisticamente significativas no modelo. Esse é mais um indicativo da possível existência de multicolinearidade, da qual já suspeitamos devido à alta correlação entre as variáveis.
+
 
 ```{r scatter_yrslost_mort}
 
