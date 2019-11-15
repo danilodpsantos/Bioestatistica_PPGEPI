@@ -545,9 +545,30 @@ summary(mrm_log)
 ```
 
 
+5. 
+__a.Utilizando o modelo da questão 4, qual é a estimativa da quantidade média de fundos de pesquisa orçados para doenças que causam 1 milhão de dias de hospitalização em um ano e a perda de 1 milhão de anos de vida ajustados por incapacidade___?
+
+```{r coef_q4}
+
+coef(mrm_log)
+```
+
+__Fundos = 8.74 + 0.91 Disab - 0.52 HospDays__
+
+```{r calculo}
+
+fundos <- 8.74 + 0.91*100000-0.52*100000
+
+fundos
+```
+ 
+A estimativa média é de U$39.008,74
 
 
-5. Utilizando o modelo da questão 4, qual é a estimativa da quantidade média de fundos de pesquisa orçados para doenças que causam 1 milhão de dias de hospitalização em um ano e a perda de 1 milhão de anos de vida ajustados por incapacidade? Calcule o intervalo de 95% de confiança para este valor. Também calcule o IC 95% para um financiamento que seria fornecido a uma nova doença que causa 1 milhão de dias de hospitalização em um ano e a perda de 1 milhão de anos de vida ajustados por incapacidade.
+__b. Calcule o intervalo de 95% de confiança para este valor__
+
+
+Também calcule o IC 95% para um financiamento que seria fornecido a uma nova doença que causa 1 milhão de dias de hospitalização em um ano e a perda de 1 milhão de anos de vida ajustados por incapacidade.
 
 6. Crie uma variável dummy que assume valor 1 se hospdays >= 1000 e 0 caso contrário. Faça a regressão entre log(dollars) versus log(disabil) e a variável dummy. Interprete os resultados, escrevendo as equações para cada categoria da variável dummy. Teste se é necessário incluir uma interação no modelo.
 
