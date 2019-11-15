@@ -21,8 +21,6 @@ library("haven")
 library("ggplot2")
 library("compareGroups")
 library("tidyverse")
-library("RColorBrewer")
-library("ellipse")
 
 dados <- read_spss(file = "3.ex.Funding.sav")
 
@@ -114,17 +112,9 @@ round(cor_matrix,2)
 ```
 
 ```{r correlation_plot}
-### Painel de 100 cores e matriz de correlacao ordenada
-my_colors <- brewer.pal(5, "Spectral")
-my_colors  <- colorRampPalette(my_colors)(100)
 
-ord <- order(cor_matrix[1, ])
-cor_matrix_ord  <- cor_matrix[ord, ord]
-
-plotcorr(cor_matrix_ord, col=my_colors[cor_matrix_ord*50+50], mar=c(1,1,1,1) )
-
-# #Não sei se ficou bom
-# pairs( ~ dollars+incid+preval+ mort+ hospdays+ yrslost+ disabil, data = dados)
+#Não sei se ficou bom
+pairs( ~ dollars+incid+preval+ mort+ hospdays+ yrslost+ disabil, data = dados)
 ```
 
 
@@ -323,7 +313,7 @@ O objetivo do nosso modelo é explicar quais características estão relacionada
  
 As variáveis preditoras candidatas estão relacionadas a: 1) quantidade de pessoas acometidas pela doença, 2) morbidade da doença e 3) mortalidade da doença. 
 
-#inserir imagem de grupos de preditores
+grupos de preditores:
 # quantidade de doentes - preval e incid
 # morte causada pela doença - yrslost e mortality
 #morbidade causada pela doença - disabil e hospdays
@@ -337,8 +327,14 @@ Nosso intuito é estimar o modelo que melhor explique o desfecho contendo um pre
 
 
 Prevalência e incidência não apresentaram alta correlação com nenhum dos outros preditores, mas é possível que isso esteja mascarado pelos dados missing.
-As variáveis dos grupos "morte" e "morbidade" de menor correlação são yrslost e disabil. Como sabemos que disabil inclui yrslost, poderíamos comparar yrslost com seu complementar, YLD.
+As variáveis dos grupos "morte" e "morbidade" de menor correlação são yrslost e disabil.
+Modelo 1: yrslost + disabil + preval
+Modelo 2: yrslost + disabil + incid
 
+Como sabemos que disabil inclui yrslost, poderíamos comparar yrslost com seu complementar, YLD (disabil - yrslost)
+
+Modelo 3: yrslost + YLD + preval
+Modelo 3: yrslost + YLD + incid
 
 
 ```{r manual_mrm_1}
