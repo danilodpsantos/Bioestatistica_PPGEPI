@@ -325,6 +325,12 @@ summary(mr_dol_1)
 Percebemos que houve mudanças importantes nos coeficientes do modelo linear multivariável comparado aos modelos lineares simples. As variáveis "mortalidade" e "anos de vida perdidos por morte prematura" passaram a ser estatisticamente significativas no modelo. Esse é mais um indicativo da possível existência de multicolinearidade, da qual já suspeitamos devido à alta correlação entre as variáveis.
 
 
+
+
+
+
+Podemos tirar isso abaixo, na minha opinião:
+
 ```{r scatter_yrslost_mort}
 
 ggplot(dados, aes(x = yrslost, y = mort)) +
