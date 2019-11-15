@@ -354,59 +354,6 @@ Modelo 3: yrslost + YLD + incid
 
 
 
-
-
-
-
-
-
-```{r manual_mrm_1}
-
-#ficou bem ruim
-manual_mrm_1 <- lm(data = dados, formula = (dollars ~ incid + mort + disabil))
-  
-
-summary(manual_mrm_1)
-```
-
-Percebemos que houve mudanças importantes nos coeficientes do modelo linear multivariável comparado aos modelos lineares simples. As variáveis "mortalidade" e "anos de vida perdidos por morte prematura" passaram a ser estatisticamente significativas no modelo. Esse é mais um indicativo da possível existência de multicolinearidade, da qual já suspeitamos devido à alta correlação entre as variáveis.
-
-Agora faremos, por etapas, a exclusão de variáveis por ordem decrescente do valor p.
-
-
-```{r manual_mrm_2}
-
-#excluo disabil
-
-manual_mrm_2 <- lm(data = dados, formula = (dollars ~ incid + preval + mort + hospdays+ yrslost))
-  
-
-summary(manual_mrm_2)
-```
-
-```{r manual_mrm_3}
-
-#excluo incid
-
-manual_mrm_3 <- lm(data = dados, formula = (dollars ~ preval + mort + hospdays+ yrslost))
-  
-
-summary(manual_mrm_3)
-```
-
-```{r manual_mrm_4}
-
-# excluo preval
-
-manual_mrm_4 <- lm(data = dados, formula = (dollars ~ mort + hospdays+ yrslost))
-  
-
-summary(manual_mrm_4)
-```
-
-
-
-
 Podemos tirar isso abaixo, na minha opinião:
 
 ```{r scatter_yrslost_mort}
