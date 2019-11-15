@@ -319,21 +319,76 @@ scat_dol_disabil
 
 __b) Construa manualmente um modelo que você julga que melhor explica o desfecho.__ 
 
-Acreditamos que investimento em pesquisa do NIH pode ser explicado pela quantidade de pessoas acometidas pela doença e sua morbidade e mortalidade. Todas as variáveis preditoras estão relacionadas a isso. No entanto, como vimos no passo anterior, muitas das variáveis preditoras estão altamente correlacionadas entre si, de modo que não parece apropriado incluir todas no mesmo modelo. 
+O objetivo do nosso modelo é explicar quais características estão relacionadas com o investimento dado às doenças pelo NIH.
+ 
+As variáveis preditoras candidatas estão relacionadas a: 1) quantidade de pessoas acometidas pela doença, 2) morbidade da doença e 3) mortalidade da doença. 
 
-Dado que, isoladamente, nenhuma das variáveis preditoras está significativamente associada ao desfecho, fica difícil a decisão de quais delas excluir. Começamos excluindo "incidência em 1990", pois entendemos que está incluída na variável "prevalência em 1990". Além disso a variável de prevalência está mais correlacionada com o desfecho.
+#inserir imagem de grupos de preditores
+# quantidade de doentes - preval e incid
+# morte causada pela doença - yrslost e mortality
+#morbidade causada pela doença - disabil e hospdays
 
 
-```{r mr_dol_1}
+Os 3 aspectos, segundo nossa hipótese, poderiam predizer o desfecho.
 
-mr_dol_1 <- lm(data = dados, formula = (dollars ~ preval + mort + hospdays+ yrslost + disabil))
+No entanto, muitas das variáveis preditoras estão altamente correlacionadas entre si, de modo que não parece apropriado incluir todas no mesmo modelo. Além disso, outro problema que temos é a ausência de certas informações do banco, faltando dados sobre prevalência e incidência para algumas doenças. Assim, o modelo estimado pode não ser válido para elas.
+
+Nosso intuito é estimar o modelo que melhor explique o desfecho contendo um preditor de cada grupo.
+
+
+Prevalência e incidência não apresentaram alta correlação com nenhum dos outros preditores, mas é possível que isso esteja mascarado pelos dados missing.
+As variáveis dos grupos "morte" e "morbidade" de menor correlação são yrslost e disabil. Como sabemos que disabil inclui yrslost, poderíamos comparar yrslost com seu complementar, YLD.
+
+
+
+```{r manual_mrm_1}
+
+#ficou bem ruim
+manual_mrm_1 <- lm(data = dados, formula = (dollars ~ incid + mort + disabil))
   
 
-summary(mr_dol_1)
+summary(manual_mrm_1)
 ```
 
 Percebemos que houve mudanças importantes nos coeficientes do modelo linear multivariável comparado aos modelos lineares simples. As variáveis "mortalidade" e "anos de vida perdidos por morte prematura" passaram a ser estatisticamente significativas no modelo. Esse é mais um indicativo da possível existência de multicolinearidade, da qual já suspeitamos devido à alta correlação entre as variáveis.
 
+Agora faremos, por etapas, a exclusão de variáveis por ordem decrescente do valor p.
+
+
+```{r manual_mrm_2}
+
+#excluo disabil
+
+manual_mrm_2 <- lm(data = dados, formula = (dollars ~ incid + preval + mort + hospdays+ yrslost))
+  
+
+summary(manual_mrm_2)
+```
+
+```{r manual_mrm_3}
+
+#excluo incid
+
+manual_mrm_3 <- lm(data = dados, formula = (dollars ~ preval + mort + hospdays+ yrslost))
+  
+
+summary(manual_mrm_3)
+```
+
+```{r manual_mrm_4}
+
+# excluo preval
+
+manual_mrm_4 <- lm(data = dados, formula = (dollars ~ mort + hospdays+ yrslost))
+  
+
+summary(manual_mrm_4)
+```
+
+
+
+
+Podemos tirar isso abaixo, na minha opinião:
 
 ```{r scatter_yrslost_mort}
 
@@ -362,9 +417,130 @@ __c) Faça o gráfico dos valores preditos versus os resíduos studentizados. In
 
 
 
+2. 
+
+__a. Transforme todas as variáveis utilizadas na questão 1 em logaritmo natural.Utilize o método stepwise para selecionar os preditores.__
+
+
+```{r stepwise_mrm_1}
+
+#começo pelo preditor de maior significância estatística, yrslost
+
+stepwise_mrm_1 <- lm(data = dados, formula = (dollars ~ log(yrslost)))
+  
+
+summary(stepwise_mrm_1)
+```
+
+```{r stepwise_mrm_2}
+
+#adiciono disabil
+
+stepwise_mrm_2 <- lm(data = dados, formula = (dollars ~ log(yrslost) + log(disabil)))
+  
+
+summary(stepwise_mrm_2)
+```
+
+```{r stepwise_mrm_3}
+
+#troco disabil por incid
+
+stepwise_mrm_3 <- lm(data = dados, formula = (dollars ~ log(yrslost) + log(incid)))
+  
+
+summary(stepwise_mrm_3)
+```
+
+```{r stepwise_mrm_4}
+
+#mort
+
+stepwise_mrm_4 <- lm(data = dados, formula = (dollars ~ log(yrslost) + log(mort)))
+  
+
+summary(stepwise_mrm_4)
+```
+
+```{r stepwise_mrm_5}
+
+#hospdays
+
+stepwise_mrm_5 <- lm(data = dados, formula = (dollars ~ log(yrslost) + log(hospdays)))
+  
+
+summary(stepwise_mrm_5)
+```
+
+```{r stepwise_mrm_6}
+
+#preval
+#mantenho esse, por dar a maior explicação ao desfecho
+
+stepwise_mrm_6 <- lm(data = dados, formula = (dollars ~ log(yrslost) + log(preval)))
+  
+
+summary(stepwise_mrm_6)
+```
+
+```{r stepwise_mrm_7}
+
+#incluir segunda melhor explicativa, hospdays
+
+stepwise_mrm_7 <- lm(data = dados, formula = (dollars ~ log(yrslost) + log(preval) + log(hospdays)))
+  
+
+summary(stepwise_mrm_7)
+```
+
+
+__b. Faça um resumo dos passos que o algoritmo tomou.__
+
+O modelo foi iniciado pelo preditor de maior significância estatística, yrslost. Em seguida, foi testada a explicação do desfecho em modelo com esse preditor e cada um dos outros, escolhendo o de maior R2 ajustado (yrslost + preval). Como permaneceram no modelo um preditor da categoria "morte" e outro da categoria "proporção de casos na população", resta apenas um que indique "morbidade". 
+
+
+__c. Faça o gráfico dos valores preditos versus os resíduos studentizados para o modelo final.__
 
 
 
 
-2. Transforme todas as variáveis utilizadas na questão 1 em logaritmo natural. Utilize o método stepwise para selecionar os preditores. Faça um resumo dos passos que o algoritmo tomou. Faça o gráfico dos valores preditos versus os resíduos studentizados para o modelo final. Compare com a resposta da questão 1.
+__d. Compare com a resposta da questão 1.__
+
+O modelo transformando as variáveis com log apresenta maior explicação do desfecho que o modelo sem transformação, como pode ser visto abaixo.
+
+```{r stepwise_semlog}
+
+#o certo seria comparar com o nosso modelo 
+
+sem_log <- lm(data = dados, formula = (dollars ~ yrslost + preval + hospdays))
+  
+
+summary(sem_log)
+```
+
 3. Para o modelo final da questão 2, faça o diagnóstico completo avaliando as suposições sobre os resíduos, multicolinearidade e observações influentes. Interprete os resultados.
+
+
+
+
+
+
+__4. Faça a regressão entre log(dollars) versus log(disabil) e log(hospdays). Interprete os resultados.__
+
+```{r mrm_log}
+
+mrm_log <- lm(data = dados, formula = (log(dollars) ~ log(disabil) + log(hospdays)))
+  
+
+summary(mrm_log)
+```
+
+
+
+
+5. Utilizando o modelo da questão 4, qual é a estimativa da quantidade média de fundos de pesquisa orçados para doenças que causam 1 milhão de dias de hospitalização em um ano e a perda de 1 milhão de anos de vida ajustados por incapacidade? Calcule o intervalo de 95% de confiança para este valor. Também calcule o IC 95% para um financiamento que seria fornecido a uma nova doença que causa 1 milhão de dias de hospitalização em um ano e a perda de 1 milhão de anos de vida ajustados por incapacidade.
+
+6. Crie uma variável dummy que assume valor 1 se hospdays >= 1000 e 0 caso contrário. Faça a regressão entre log(dollars) versus log(disabil) e a variável dummy. Interprete os resultados, escrevendo as equações para cada categoria da variável dummy. Teste se é necessário incluir uma interação no modelo.
+
+
+
