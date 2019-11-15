@@ -245,7 +245,6 @@ lm_dol_hospdays <- lm(formula = dollars ~ hospdays,
 
 summary(lm_dol_hospdays)
 
-
 ```
 
 ```{r scat_dol_hospdays}
@@ -367,6 +366,7 @@ ggplot(dados, aes(x = yrslost, y = mort)) +
 
 ```
 
+
 ```{r scatter_yrslost_DALY}
 
 ggplot(dados, aes(x = yrslost, y = disabil)) +
@@ -383,9 +383,12 @@ __c) Faça o gráfico dos valores preditos versus os resíduos studentizados. In
 
 
 
+
+
+
 2. 
 
-__a. Transforme todas as variáveis utilizadas na questão 1 em logaritmo natural.Utilize o método stepwise para selecionar os preditores.__
+__a. Transforme todas as variáveis utilizadas na questão 1 em logaritmo natural. Utilize o método stepwise para selecionar os preditores.__
 
 
 ```{r stepwise_mrm_1}
