@@ -111,6 +111,12 @@ cor_matrix <- cor(my_data, use = "complete.obs")
 round(cor_matrix,2)
 ```
 
+```{r correlation_plot}
+
+#Não sei se ficou bom
+pairs( ~ dollars+incid+preval+ mort+ hospdays+ yrslost+ disabil, data = dados)
+```
+
 
 ```{r scat_function}
 
