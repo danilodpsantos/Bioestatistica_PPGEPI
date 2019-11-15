@@ -16,11 +16,15 @@ As questões a seguir referem-se ao estudo de Gross et al (1999) sobre a relaç�
 
 # install.packages("haven")
 # install.packages("ggplot2")
+#install.packages("RColorBrewer")
+#install.packages("ellipse")
 
 library("haven")
 library("ggplot2")
 library("compareGroups")
 library("tidyverse")
+library("RColorBrewer")
+library("ellipse")
 
 dados <- read_spss(file = "3.ex.Funding.sav")
 
