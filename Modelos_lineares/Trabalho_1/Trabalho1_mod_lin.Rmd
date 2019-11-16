@@ -99,6 +99,12 @@ table_descr <- createTable(compare_doencas, show.p.overall = FALSE, show.ratio =
 table_descr
 ```
 
+Sugiro uma descritiva para verificar se o desfecho apresenta distribuição normal (já que estamos usando regressão linear)
+
+
+
+
+
 1. 
 
 __a) Explore a relação entre dollars e as outras variáveis independentes (exceto disease e id).__ 
