@@ -349,7 +349,7 @@ Modelo 3: yrslost + YLD + preval
 Modelo 3: yrslost + YLD + incid
 
 
-
+Métodos backward, forward e stepwise não nos parecem adequados, devido à alta correlação entre os preditores, indicando colinearidade.
 
 
 
