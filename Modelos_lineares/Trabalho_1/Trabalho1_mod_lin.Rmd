@@ -18,6 +18,7 @@ As questões a seguir referem-se ao estudo de Gross et al (1999) sobre a relaç�
 # install.packages("ggplot2")
 #install.packages("RColorBrewer")
 #install.packages("ellipse")
+install.packages("car")
 
 library("haven")
 library("ggplot2")
@@ -25,6 +26,7 @@ library("compareGroups")
 library("tidyverse")
 library("RColorBrewer")
 library("ellipse")
+library("car")
 
 dados <- read_spss(file = "3.ex.Funding.sav")
 
@@ -476,6 +478,19 @@ O modelo foi iniciado pelo preditor de maior significância estatística, yrslos
 
 __c. Faça o gráfico dos valores preditos versus os resíduos studentizados para o modelo final.__
 
+```{r stepwise_predicted_studentized}
+  
+spreadLevelPlot(stepwise_mrm_7)
+```
+
+```{r stepwise_predicted_studentized}
+
+#acho que tem outro jeito de fazer também, plotando em um gráfico os dados salvos nos objetos abaixo
+
+dados$predicted <- predict(stepwise_mrm_7)
+dados$studentized <- rstudent(stepwise_mrm_7)
+  
+```
 
 
 
