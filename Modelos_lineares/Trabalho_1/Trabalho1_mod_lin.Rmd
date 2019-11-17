@@ -1,6 +1,6 @@
 ---
 title: "Trabalho 1 Modelos Lineares"
-author: "Danilo de Paula Santos"
+author: "Gabriela Wüsch Lopes e Danilo de Paula Santos"
 date: "10/18/2019"
 output:
   html_document:
