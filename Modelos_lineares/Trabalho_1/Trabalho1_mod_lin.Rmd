@@ -24,7 +24,7 @@ install.packages("car")
 
 library("haven")
 library("ggplot2")
-library("compareGroups")
+#library("compareGroups")
 library("tidyverse")
 library("RColorBrewer")
 library("ellipse")
@@ -143,9 +143,17 @@ plotcorr(cor_matrix_ord, col = my_colors[cor_matrix_ord*50+50], mar = c(1, 1, 1,
 
 ```{r distribution_incid}
 
+#acho que seria melhor mostrar a distribuição da incidência, como é variável contínua
 hist(dados$incid, breaks = 50)
 
 ```
+
+```{r distribution_incid_2}
+
+summary(dados$incid)
+
+```
+
 
 ```{r lm_dol_incid}
 
@@ -179,7 +187,7 @@ scat_dol_incid
 ```{r distribution_preval}
 
 hist(dados$preval, breaks = 50)
-
+summary(dados$preval)
 ```
 
 ```{r lm_dol_preval}
@@ -213,6 +221,7 @@ scat_dol_preval
 ```{r distribution_mort}
 
 hist(dados$mort, breaks = 50)
+summary(dados$mort)
 
 ```
 
@@ -248,7 +257,7 @@ scat_dol_mort
 ```{r distribution_hospdays}
 
 hist(dados$hospdays, breaks = 50)
-
+summary(dados$hospdays)
 ```
 
 
@@ -283,6 +292,7 @@ scat_dol_hospdays
 
 hist(dados$yrslost, breaks = 50)
 
+summary(dados$yrslost)
 ```
 
 ```{r lm_dol_yrslost}
@@ -316,6 +326,7 @@ scat_dol_yrslost
 ```{r distribution_disabil}
 
 hist(dados$disabil, breaks = 50)
+summary(dados$disabil)
 
 ```
 
