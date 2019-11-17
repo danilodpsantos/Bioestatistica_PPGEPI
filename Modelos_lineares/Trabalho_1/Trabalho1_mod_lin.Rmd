@@ -660,7 +660,7 @@ confint(mod_dummy_hospdays)
 ```
 
 
-O modelo que inclui a variável dummy explica 65% da variabilidade de log de dollars, sendo que a cada aumento de 1 ponto de log de disabil ocorre aumento de 0.77 (IC 0.54 a 0.99) log de dollars, e para doenças que gerem a partir de 1000 dias de internação, o investimento em pesquisa cai 1.40 (IC -2.07 a -0.73)log de dollars
+O modelo que inclui a variável dummy explica 65% da variabilidade de log de dollars, sendo que a cada aumento de 1 ponto de log de disabil ocorre aumento de 0.77 (IC 0.54 a 0.99) log de dollars, e para doenças que gerem a partir de 1000 dias de internação, o investimento em pesquisa cai 1.40 (IC -2.07 a -0.73)log de dollars.
 
 
 
