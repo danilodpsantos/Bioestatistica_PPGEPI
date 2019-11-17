@@ -462,6 +462,7 @@ step.model <- stepAIC(modelo_full, direction = "both", trace = TRUE)
 
 # Resumo do modelo final
 summary(step.model)
+
 ```
 
 
