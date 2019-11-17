@@ -5,9 +5,8 @@ date: "10/18/2019"
 output:
   html_document: 
     theme: paper
-  pdf_document: default
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
 As questões a seguir referem-se ao estudo de Gross et al (1999) sobre a relação entre financiamento pelo National Institutes of Health e carga de 29 doenças. Os dados da Tabela 1 desde estudo estão no arquivo 3.ex.Funding.sav. Os nomes das variáveis e definições neste arquivo são:
@@ -435,6 +434,7 @@ hist(sres, freq=FALSE,
    main="Distribution of Studentized Residuals")
 
 spreadLevelPlot(modelo1)
+
 ```
 
 
@@ -460,11 +460,19 @@ summary(modelo_full)
 
 step.model <- stepAIC(modelo_full, direction = "both", trace = TRUE)
 
+
 # Resumo do modelo final
 summary(step.model)
 
 ```
+```{r avalia_stepwise}
 
+plot(step.model)
+
+
+```
+
+Não consegui explicar direito, achei melhor nem escrever :/
 
 ```{r stepwise_mrm_1}
 
@@ -577,11 +585,13 @@ mrm_log <- lm(data = dados, formula = (log(dollars) ~ log(disabil) + log(hospday
   
 
 summary(mrm_log)
-```
 
+confint(mrm_log)
+```
+Segundo o modelo apresentado, a cada variação de um ponto no log de disabil, ocorre aumento de 0.90 (IC = 0.6-1.21) no log de dollars e a cada aumento de um ponto no log de hospdays ocorre uma diminuição de 0,52 (IC = -0.81 a -0.0225) log de dollars. 
 
 5. 
-__a.Utilizando o modelo da questão 4, qual é a estimativa da quantidade média de fundos de pesquisa orçados para doenças que causam 1 milhão de dias de hospitalização em um ano e a perda de 1 milhão de anos de vida ajustados por incapacidade?Calcule o intervalo de 95% de confiança para este valor__
+__a.Utilizando o modelo da questão 4, qual é a estimativa da quantidade média de fundos de pesquisa orçados para doenças que causam 1 milhão de dias de hospitalização em um ano e a perda de 1 milhão de anos de vida ajustados por incapacida de?Calcule o intervalo de 95% de confiança para este valor__
 
 ```{r coef_q4}
 
@@ -597,7 +607,8 @@ newdata <- data.frame(disabil = 100000,
 
 predict(mrm_log, newdata, interval = "confidence")
 ```
- 
+Será que aqui não devemos usar o intervalo de predição no lugar do intervalo de confiança? Acho que o de confiança é na questão de baixo e o de predição é aqui :)
+
 Média de R$ 13,21 (em milhares), ou seja, 13.210 dólares, com IC de 12.269 a 14.154.
 
 
@@ -610,6 +621,46 @@ predict(mrm_log, newdata, interval = "prediction")
 ```
 
 6. Crie uma variável dummy que assume valor 1 se hospdays >= 1000 e 0 caso contrário. Faça a regressão entre log(dollars) versus log(disabil) e a variável dummy. Interprete os resultados, escrevendo as equações para cada categoria da variável dummy. Teste se é necessário incluir uma interação no modelo.
+
+```{r dummy_hospdays}
+
+dados$dummy_hospdays <- ifelse(dados$hospdays >= 1000, 1,
+                               ifelse(is.na(dados$hospdays), NA,0))
+
+```
+
+```{r model_dummy_hospdays}
+
+mod_dummy_hospdays <- lm(data = dados, formula = (log(dollars) ~ log(disabil) + dummy_hospdays))
+
+summary(mod_dummy_hospdays)
+```
+
+```{r hist res model_dummy}
+dummy_res <- studres(mod_dummy_hospdays)
+
+hist(dummy_res, freq=FALSE, 
+   main="Distribution of Studentized Residuals")
+```
+
+```{r qq res model_dummy}
+qqPlot(dummy_res)
+```
+
+
+```{r student res model_dummy}
+
+spreadLevelPlot(mod_dummy_hospdays)
+
+```
+```{r confint_dummy}
+
+confint(mod_dummy_hospdays)
+
+```
+
+
+O modelo que inclui a variável dummy explica 65% da variabilidade de log de dollars, sendo que a cada aumento de 1 ponto de log de disabil ocorre aumento de 0.77 (IC 0.54 a 0.99) log de dollars, e para doenças que gerem a partir de 1000 dias de internação, o investimento em pesquisa cai 1.40 (IC -2.07 a -0.73)log de dollars
 
 
 
