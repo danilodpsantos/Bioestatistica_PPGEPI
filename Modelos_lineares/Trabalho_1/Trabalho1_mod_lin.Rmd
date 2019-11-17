@@ -9,7 +9,7 @@ output:
 
 As questões a seguir referem-se ao estudo de Gross et al (1999) sobre a relação entre financiamento pelo National Institutes of Health e carga de 29 doenças. Os dados da Tabela 1 desde estudo estão no arquivo 3.ex.Funding.sav. Os nomes das variáveis e definições neste arquivo são:
 
-!["variaveis"](C:/Users/Gabriela/Documents/Bioestatistica_PPGEPI/Modelos_lineares/Trabalho_1/variaveis_gross.PNG)
+!["variaveis"](variaveis_gross.PNG)
 
 
 ```{r preparing_R}
