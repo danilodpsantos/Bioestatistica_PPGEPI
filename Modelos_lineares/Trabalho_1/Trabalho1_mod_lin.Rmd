@@ -3,8 +3,11 @@ title: "Trabalho 1 Modelos Lineares"
 author: "Gabriela Wüsch Lopes e Danilo de Paula Santos"
 date: "10/18/2019"
 output:
-  html_document:
-    df_print: paged
+  html_document: 
+    theme: paper
+  pdf_document: default
+editor_options: 
+  chunk_output_type: console
 ---
 
 As questões a seguir referem-se ao estudo de Gross et al (1999) sobre a relação entre financiamento pelo National Institutes of Health e carga de 29 doenças. Os dados da Tabela 1 desde estudo estão no arquivo 3.ex.Funding.sav. Os nomes das variáveis e definições neste arquivo são:
@@ -12,7 +15,7 @@ As questões a seguir referem-se ao estudo de Gross et al (1999) sobre a relaç�
 !["variaveis"](variaveis_gross.PNG)
 
 
-```{r preparing_R}
+```{r preparing_R, message=FALSE, warning=FALSE}
 
 # install.packages("haven")
 # install.packages("ggplot2")
@@ -25,13 +28,16 @@ library("compareGroups")
 library("tidyverse")
 library("RColorBrewer")
 library("ellipse")
+library("car")
+```
 
+```{r dados}
 dados <- read_spss(file = "3.ex.Funding.sav")
 
 ```
 # DESCRIÇÃO GERAL DO BANCO
 
-```{r agrupando_diseases}
+```{r agrupando_diseases, message=FALSE, warning=FALSE, include=FALSE, paged.print=TRUE}
 # transformando disease e factor
 dados$disease <- factor(dados$disease)
 
@@ -87,7 +93,7 @@ dados <- merge(dados, dados_grupo)
 
 ```
 
-```{r descritiva_ex_1 }
+```{r descritiva_ex_1, fig.width=7, message=FALSE, warning=FALSE, paged.print=TRUE}
 
 compare_doencas <- compareGroups(disease_group ~ dollars_group + incid_group + preval_group + hospdays_group + mort_group + yrslost_group + disabil_group,
                                  data = dados,
@@ -132,31 +138,13 @@ cor_matrix_ord <- cor_matrix[ord, ord]
 
 plotcorr(cor_matrix_ord, col = my_colors[cor_matrix_ord*50+50], mar = c(1, 1, 1, 1))
 
-#Não sei se ficou bom
-pairs( ~ dollars+incid+preval+ mort+ hospdays+ yrslost+ disabil, data = dados)
 ```
 
+```{r distribution_incid}
 
-```{r scat_function}
-
-#Função que fixa o banco como dados e o y como dólares para criar um scatterplot
-
-
-dollar_plot <- function(data, x_var, y_var ){
-  
-  
-
-  ggplot(data = data,
-         aes(x = x_var,
-             y = y_var)) +
-    geom_point()
-  
-  
-}
-
+hist(dados$incid, breaks = 50)
 
 ```
-
 
 ```{r lm_dol_incid}
 
@@ -187,6 +175,11 @@ scat_dol_incid <- ggplot(dados, aes(x = incid, y = dollars)) +
 scat_dol_incid
 ```
 
+```{r distribution_preval}
+
+hist(dados$preval, breaks = 50)
+
+```
 
 ```{r lm_dol_preval}
 
@@ -216,6 +209,13 @@ scat_dol_preval
 
 ```
 
+```{r distribution_mort}
+
+hist(dados$mort, breaks = 50)
+
+```
+
+
 ```{r lm_dol_mort}
 
 lm_dol_mort <- lm(formula = dollars ~ mort,
@@ -244,6 +244,13 @@ scat_dol_mort
 
 ```
 
+```{r distribution_hospdays}
+
+hist(dados$hospdays, breaks = 50)
+
+```
+
+
 ```{r lm_dol_hospdays}
 
 lm_dol_hospdays <- lm(formula = dollars ~ hospdays,
@@ -270,6 +277,13 @@ scat_dol_hospdays
 
 
 ```
+
+```{r distribution_yrslost}
+
+hist(dados$yrslost, breaks = 50)
+
+```
+
 ```{r lm_dol_yrslost}
 
 lm_dol_yrslost <- lm(formula = dollars ~ yrslost,
@@ -294,6 +308,13 @@ scat_dol_yrslost <- ggplot(dados, aes(x = yrslost, y = dollars)) +
 
 scat_dol_yrslost
 
+
+```
+
+
+```{r distribution_disabil}
+
+hist(dados$disabil, breaks = 50)
 
 ```
 
@@ -329,20 +350,23 @@ __b) Construa manualmente um modelo que você julga que melhor explica o desfech
 
 O objetivo do nosso modelo é explicar quais características estão relacionadas com o investimento dado às doenças pelo NIH.
  
-As variáveis preditoras candidatas estão relacionadas a: 1) quantidade de pessoas acometidas pela doença, 2) morbidade da doença e 3) mortalidade da doença. 
+As variáveis preditoras candidatas estão relacionadas a:
+* 1) quantidade de pessoas acometidas pela doença, 
+* 2) morbidade da doença e 
+* 3) mortalidade da doença. 
 
 grupos de preditores:
 # quantidade de doentes - preval e incid
 # morte causada pela doença - yrslost e mortality
-#morbidade causada pela doença - disabil e hospdays
+# morbidade causada pela doença - disabil e hospdays
 
 
-Os 3 aspectos, segundo nossa hipótese, poderiam predizer o desfecho.
+Os 3 aspectos, segundo nossa hipótese, poderiam razões que levassem a investimentos maiores em pesquisa (o desfecho) para uma dada doença.
 
-No entanto, muitas das variáveis preditoras estão altamente correlacionadas entre si, de modo que não parece apropriado incluir todas no mesmo modelo. Além disso, outro problema que temos é a ausência de certas informações do banco, faltando dados sobre prevalência e incidência para algumas doenças. Assim, o modelo estimado pode não ser válido para elas.
+Um obstáculo é que muitas das variáveis preditoras estão altamente correlacionadas entre si, de modo que não parece apropriado incluir todas no mesmo modelo. 
+Além disso, outro problema que temos é a ausência de certas informações do banco, faltando dados sobre prevalência e incidência para algumas doenças. Assim, o modelo estimado pode não ser válido para elas.
 
-Nosso intuito é estimar o modelo que melhor explique o desfecho contendo um preditor de cada grupo.
-
+Nosso intuito é estimar o modelo que melhor explique o desfecho contendo um preditor de cada grupo (quantidade, mortalidade e morbidade).
 
 Prevalência e incidência não apresentaram alta correlação com nenhum dos outros preditores, mas é possível que isso esteja mascarado pelos dados missing.
 As variáveis dos grupos "morte" e "morbidade" de menor correlação são yrslost e disabil.
@@ -357,36 +381,61 @@ Modelo 3: yrslost + YLD + incid
 
 Métodos backward, forward e stepwise não nos parecem adequados, devido à alta correlação entre os preditores, indicando colinearidade.
 
+```{r modelo1}
 
+modelo1 <- lm(formula = dollars ~ preval + yrslost + disabil,
+                    data = dados)
 
-Podemos tirar isso abaixo, na minha opinião:
-
-```{r scatter_yrslost_mort}
-
-ggplot(dados, aes(x = yrslost, y = mort)) +
-                                 geom_point() +
-                                 scale_x_continuous("Thousands of years of life lost") +
-                                 scale_y_continuous("Mortality per 1000") +
-                                 theme_minimal()
-
+summary(modelo1)
 
 ```
 
+```{r modelo2}
 
-```{r scatter_yrslost_DALY}
+modelo2 <- lm(formula = dollars ~ incid + yrslost + disabil,
+                    data = dados)
 
-ggplot(dados, aes(x = yrslost, y = disabil)) +
-                                 geom_point() +
-                                 scale_x_continuous("Thousands of years of life lost") +
-                                 scale_y_continuous("Thousands of disability-adjusted life years") +
-                                 theme_minimal()
-
+summary(modelo2)
 
 ```
 
+```{r modelo3a}
+dados$YLD <- dados$disabil - dados$yrslost
 
+modelo3a <- lm(formula = dollars ~ preval + yrslost + YLD,
+                    data = dados)
+
+summary(modelo3a)
+
+```
+
+```{r modelo3b}
+dados$YLD <- dados$disabil - dados$yrslost
+
+modelo3b <- lm(formula = dollars ~ incid + yrslost + YLD,
+                    data = dados)
+
+summary(modelo3b)
+
+```
 __c) Faça o gráfico dos valores preditos versus os resíduos studentizados. Interprete os resultados.__
 
+```{r residuos_student_qq}
+
+car::qqPlot(modelo1, main = "QQ Plot")
+
+```
+
+```{r residuos_student_hist}
+library (MASS)
+
+sres <- studres(modelo1)
+
+hist(sres, freq=FALSE, 
+   main="Distribution of Studentized Residuals")
+
+spreadLevelPlot(modelo1)
+```
 
 
 
@@ -396,12 +445,31 @@ __c) Faça o gráfico dos valores preditos versus os resíduos studentizados. In
 
 __a. Transforme todas as variáveis utilizadas na questão 1 em logaritmo natural. Utilize o método stepwise para selecionar os preditores.__
 
+http://www.sthda.com/english/articles/37-model-selection-essentials-in-r/154-stepwise-regression-essentials-in-r/
+
+
+```{r full_model}
+
+# Preparando modelo comtodas as variáveis a serem avaliadas
+modelo_full <- lm(data = dados, log(dollars) ~ log(incid) + log(preval) + log(hospdays) + log(mort) + log(yrslost) + log(disabil) + log(YLD))
+ 
+# COnferindo resultado deste modelo                 
+summary(modelo_full)
+
+# Método stepwise de seleção de variáveis:
+
+step.model <- stepAIC(modelo_full, direction = "both", trace = TRUE)
+
+# Resumo do modelo final
+summary(step.model)
+```
+
 
 ```{r stepwise_mrm_1}
 
 #começo pelo preditor de maior significância estatística, yrslost
 
-stepwise_mrm_1 <- lm(data = dados, formula = (dollars ~ log(yrslost)))
+stepwise_mrm_1 <- lm(data = dados, formula = (log(dollars) ~ log(yrslost)))
   
 
 summary(stepwise_mrm_1)
@@ -411,7 +479,7 @@ summary(stepwise_mrm_1)
 
 #adiciono disabil
 
-stepwise_mrm_2 <- lm(data = dados, formula = (dollars ~ log(yrslost) + log(disabil)))
+stepwise_mrm_2 <- lm(data = dados, formula = (log(dollars) ~ log(yrslost) + log(disabil)))
   
 
 summary(stepwise_mrm_2)
@@ -421,7 +489,7 @@ summary(stepwise_mrm_2)
 
 #troco disabil por incid
 
-stepwise_mrm_3 <- lm(data = dados, formula = (dollars ~ log(yrslost) + log(incid)))
+stepwise_mrm_3 <- lm(data = dados, formula = (log(dollars) ~ log(disabil) + log(incid)))
   
 
 summary(stepwise_mrm_3)
@@ -431,7 +499,7 @@ summary(stepwise_mrm_3)
 
 #mort
 
-stepwise_mrm_4 <- lm(data = dados, formula = (dollars ~ log(yrslost) + log(mort)))
+stepwise_mrm_4 <- lm(data = dados, formula = (log(dollars) ~ log(disabil) + log(mort)))
   
 
 summary(stepwise_mrm_4)
@@ -441,7 +509,7 @@ summary(stepwise_mrm_4)
 
 #hospdays
 
-stepwise_mrm_5 <- lm(data = dados, formula = (dollars ~ log(yrslost) + log(hospdays)))
+stepwise_mrm_5 <- lm(data = dados, formula = (log(dollars) ~ log(disabil) + log(hospdays)))
   
 
 summary(stepwise_mrm_5)
@@ -452,7 +520,7 @@ summary(stepwise_mrm_5)
 #preval
 #mantenho esse, por dar a maior explicação ao desfecho
 
-stepwise_mrm_6 <- lm(data = dados, formula = (dollars ~ log(yrslost) + log(preval)))
+stepwise_mrm_6 <- lm(data = dados, formula = (log(dollars) ~ log(disabil) + log(hospdays) + log(preval)))
   
 
 summary(stepwise_mrm_6)
