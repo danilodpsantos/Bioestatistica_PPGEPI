@@ -22,17 +22,19 @@ As questões a seguir referem-se ao estudo de Gross et al (1999) sobre a relaç�
 #install.packages("ellipse")
 #install.packages("car")
 #install.packages("faraway")
+#install.packages("mctest")
+#install.packages("faraway")
 
 library("haven")
 library("ggplot2")
-#library("compareGroups")
+library("compareGroups")
 library("tidyverse")
 library("RColorBrewer")
 library("ellipse")
 library("car")
 library("mctest")
 library("faraway")
-library (MASS)
+library ("MASS")
 ```
 
 
@@ -443,7 +445,7 @@ Testo preval. Mantenho esse, por dar a maior explicação ao desfecho
 #preval
 #mantenho esse, por dar a maior explicação ao desfecho
 
-stepwise_mrm_6 <- lm(data = dados, formula = (log(dollars) ~ log(yrslost) + log(preval))
+stepwise_mrm_6 <- lm(data = dados, formula = (log(dollars) ~ log(yrslost) + log(preval)))
   
 
 summary(stepwise_mrm_6)
