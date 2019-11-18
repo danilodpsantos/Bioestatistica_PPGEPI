@@ -27,7 +27,7 @@ As questões a seguir referem-se ao estudo de Gross et al (1999) sobre a relaç�
 
 library("haven")
 library("ggplot2")
-library("compareGroups")
+#library("compareGroups")
 library("tidyverse")
 library("RColorBrewer")
 library("ellipse")
@@ -277,7 +277,7 @@ As variáveis dos grupos "morte" e "morbidade" de menor correlação são yrslos
 Modelo 1: yrslost + disabil + preval
 Modelo 2: yrslost + disabil + incid
 
-Como sabemos que disabil inclui yrslost, poderíamos comparar yrslost com seu complementar, YLD (disabil - yrslost)
+Como sabemos que disabil inclui yrslost (havendo risco de multicolinearidade), outra opção seria comparar yrslost com seu complementar, YLD (disabil - yrslost)
 
 Modelo 3a: yrslost + YLD + preval
 Modelo 3b: yrslost + YLD + incid
@@ -362,16 +362,16 @@ sres <- studres(modelo1)
 hist(sres, freq=FALSE, 
    main="Distribution of Studentized Residuals")
 
-
 ```
+
 ```{r residuos_student_2}
 
-spreadLevelPlot(modelo1)
+plot(modelo1, 5)
 
 ```
 
-São poucos pontos no gráfico, mas parece que a suposição de homogeneidade de variância do desfecho não foi violada.
-
+De modo geral, os resíduos estão concentrados em torno do zero. No entanto, há duas observações, 1 (AIDS) e 5 (doença cardíaca isquêmica), com resíduos altos. Ou seja, o investimento dado a essas doenças não corresponde ao investimento esperado pelo modelo, conforme o conjunto de preditores dessas doenças (prevalência, anos de vida perdidos por morte prematura e anos de vida ajustados para incapacidade).
+Além disso, essas observações apresentam altas distâncias de Cook, sendo valores influentes para o modelo de regressão.
 
 2. 
 
@@ -467,23 +467,23 @@ summary(stepwise_mrm_7)
 
 __b. Faça um resumo dos passos que o algoritmo tomou.__
 
-O modelo foi iniciado pelo preditor de maior significância estatística, yrslost. Em seguida, foi testada a explicação do desfecho em modelo com esse preditor e cada um dos outros, escolhendo o de maior R2 ajustado (yrslost + preval). Como permaneceram no modelo um preditor da categoria "morte" e outro da categoria "proporção de casos na população", resta apenas um que indique "morbidade". Para isso, escolho hospdays, que traz boa explicação ao modelo.
+O modelo foi iniciado pelo preditor de maior significância estatística, yrslost. Em seguida, foi testada a explicação do desfecho em modelo com esse preditor e cada um dos outros, escolhendo o de maior R2 ajustado (yrslost + preval). Como permaneceram no modelo um preditor da categoria "morte" e outro da categoria "proporção de casos na população", resta apenas um que indique "morbidade". Para isso, foi escolhido hospdays, que traz boa explicação ao modelo.
 
 
 __c. Faça o gráfico dos valores preditos versus os resíduos studentizados para o modelo final.__
 
 ```{r stepwise_predicted_studentized}
   
-spreadLevelPlot(stepwise_mrm_7)
+plot(stepwise_mrm_7)
 ```
 
 
 __d. Compare com a resposta da questão 1.__
 
-O modelo com log apresenta uma variável significativamente associada ao desfecho, além de apresentar melhor ajuste.
+O modelo com log apresenta uma variável significativamente associada ao desfecho, além de apresentar melhor ajuste (proporção de variabilidade do desfecho explicada pelo modelo é maior).
 
 
-3. Para o modelo final da questão 2, faça o diagnóstico completo avaliando as suposições sobre os resíduos, multicolinearidade e observações influentes. Interprete os resultados.
+__3. Para o modelo final da questão 2, faça o diagnóstico completo avaliando as suposições sobre os resíduos, multicolinearidade e observações influentes. Interprete os resultados.__
 
 ```{r resíduos}
 
@@ -491,12 +491,14 @@ plot(stepwise_mrm_7)
 
 ```
 
-Gráfico 1: avalia a suposição de homogeneidade de variância do desfecho. O esperado seria ver uma nuvem simetricamente espalhada ao longo do eixo zero, sem padrão. No entanto, não é o que o gráfico aparenta. Assim, acreditamos que essa suposição possa estar sendo violada.
+Gráfico 1: avalia a linearidade entre preditores e desfecho. Uma linha horizontal, sem padrões, indica uma relação linear. A linha vermelha não parece se comportar de modo linear em torno do zero, violando essa suposição.
 
 Gráfico 2: QQ-plot para avaliar suposição de que os resíduos seguem uma distribuição normal.
 Observando o gráfico, parece que a maioria dos pontos estão próximos da reta, com exceção dos pontos próximos das caudas.
 
-Gráfico 4: observações influentes. Difícil interpretação.
+Gráfico 3: Usado para avaliar homogeneidade de variância do desfecho. O esperado seria ver uma linha horizontal com nuvem de pontos simetricamente espalhada. No entanto, não é o que o gráfico aparenta. Assim, acreditamos que essa suposição possa estar sendo violada.
+
+Gráfico 4: Usado para avaliar observações influentes. "Standardized residuals", nesse gráfico, são os resíduos studentizados. O resíduo da observação 1 excede 3 desvios-padrão. Além disso, esse resíduo se encontra além da linha da distância de Cook (linha vermelha pontilhada), ou seja, apresenta uma grande distância de Cook e é um valor influente para os coeficientes de regressão estimados.
 
 ```{r resíduos_vif}
 
@@ -504,7 +506,7 @@ vif(stepwise_mrm_7)
 
 ```
 
-Multicolinearidade aparentemente pouco preocupante analisando o vif de cada um dos preditores.
+Multicolinearidade aparentemente pouco preocupante analisando o vif de cada um dos preditores (VIF menor que 5)
 
 
 __4. Faça a regressão entre log(dollars) versus log(disabil) e log(hospdays). Interprete os resultados.__
@@ -551,7 +553,9 @@ __b.Também calcule o IC 95% para um financiamento que seria fornecido a uma no
 predict(mrm_log, newdata, interval = "prediction")
 ```
 
-6. Crie uma variável dummy que assume valor 1 se hospdays >= 1000 e 0 caso contrário. Faça a regressão entre log(dollars) versus log(disabil) e a variável dummy. Interprete os resultados, escrevendo as equações para cada categoria da variável dummy. Teste se é necessário incluir uma interação no modelo.
+Média de 13.210 dólares, com IC de 11.433 a 14.990 dólares
+
+__6. Crie uma variável dummy que assume valor 1 se hospdays >= 1000 e 0 caso contrário. Faça a regressão entre log(dollars) versus log(disabil) e a variável dummy. Interprete os resultados, escrevendo as equações para cada categoria da variável dummy. Teste se é necessário incluir uma interação no modelo.__
 
 ```{r dummy_hospdays}
 
@@ -594,5 +598,6 @@ confint(mod_dummy_hospdays)
 
 O modelo que inclui a variável dummy explica 65% da variabilidade de log de dollars, sendo que a cada aumento de 1 ponto de log de disabil ocorre aumento de 0.77 (IC 0.54 a 0.99) log de dollars, e para doenças que gerem a partir de 1000 dias de internação, o investimento em pesquisa cai 1.40 (IC -2.07 a -0.73)log de dollars.
 
+Não foi testada a interação.
 
 
