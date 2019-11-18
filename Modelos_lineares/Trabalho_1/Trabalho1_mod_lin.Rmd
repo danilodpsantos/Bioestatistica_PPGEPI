@@ -36,81 +36,6 @@ library("car")
 dados <- read_spss(file = "3.ex.Funding.sav")
 
 ```
-# DESCRIÇÃO GERAL DO BANCO
-
-```{r agrupando_diseases, message=FALSE, warning=FALSE, include=FALSE, paged.print=TRUE}
-# transformando disease e factor
-dados$disease <- factor(dados$disease)
-
-
-# Gerando grupos de doenças
-
-dados$disease_group <- ifelse(dados$disease ==  "Breast Cancer"     |
-                              dados$disease ==  "Cervical cancer"   |
-                              dados$disease ==  "Colorectal cancer" |
-                              dados$disease ==  "Lung cancer"     |
-                              dados$disease ==  "Ovarian cancer"  |
-                              dados$disease ==  "Prostate cancer" |
-                              dados$disease ==  "Uterine cancer", "Cancer", 
-                              ifelse( dados$disease == "Cirrhosis" |
-                                      dados$disease == "Chronic obst. pulmonary d" |
-                                      dados$disease == "Ischemic heart disease" |
-                                      dados$disease == "Stroke"  |
-                                      dados$disease ==  "Diabetes mellitus"|
-                                      dados$disease ==   "Asthma" | 
-                                      dados$disease == "Peptic ulcer"|
-                                      dados$disease == "Alcohol abuse","Non-communicable diseases",
-                                      ifelse(dados$disease == "Dental and oral disorders","Other non-communicable diseases",
-                                      ifelse(dados$disease == "Dementia" |
-                                             dados$disease == "Depression"  |
-                                             dados$disease == "Epilepsy"   |
-                                             dados$disease == "Parkinson's disease" | 
-                                             dados$disease ==  "Multiple sclerosis" |
-                                             dados$disease == "Schizophrenia" , "Mental and neurological disorders", 
-                                             ifelse(dados$disease == "Tuberculosis"|
-                                                    dados$disease == "Sexually transmitted dise"|
-                                                    dados$disease == "Pneumonia" |
-                                                    dados$disease == "Otitis media"|
-                                                    dados$disease == "Perinatal conditions", "Communicable and neonatal diseases",
-                                                           ifelse(dados$disease == "Injuries", "Injuries", 
-                                                                  ifelse(dados$disease == "AIDS", "AIDS", NA)))))))
-
-
-```
-
-```{r variaveis_grupos}
-
-dados_grupo <- dados%>%
-  group_by(disease_group) %>%
-  summarise(dollars_group = sum(dollars, na.rm = TRUE),
-            incid_group = sum(incid, na.rm = TRUE),
-            preval_group = sum(preval, na.rm = TRUE),
-            hospdays_group = sum(hospdays, na.rm = TRUE),
-            mort_group = sum(mort, na.rm = TRUE),
-            yrslost_group = sum(yrslost, na.rm = TRUE),
-            disabil_group = sum(disabil, na.rm = TRUE))
-
-dados <- merge(dados, dados_grupo)
-
-```
-
-```{r descritiva_ex_1, fig.width=7, message=FALSE, warning=FALSE, paged.print=TRUE}
-
-compare_doencas <- compareGroups(disease_group ~ dollars_group + incid_group + preval_group + hospdays_group + mort_group + yrslost_group + disabil_group,
-                                 data = dados,
-                                 max.ylev = 29)
-
-table_descr <- createTable(compare_doencas, show.p.overall = FALSE, show.ratio = TRUE, show.n = FALSE, type = 3)
-
-
-table_descr
-```
-
-Sugiro uma descritiva para verificar se o desfecho apresenta distribuição normal (já que estamos usando regressão linear)
-
-
-
-
 
 1. 
 
@@ -600,7 +525,16 @@ summary(sem_log)
 
 3. Para o modelo final da questão 2, faça o diagnóstico completo avaliando as suposições sobre os resíduos, multicolinearidade e observações influentes. Interprete os resultados.
 
+```{r residuos}
 
+#1- suposição de que os resíduos seguem uma distribuição normal
+#QQplot: plota quartis do resíduo versus quartis de uma distribuição normal
+
+sem_log <- lm(data = dados, formula = (dollars ~ yrslost + preval + hospdays))
+  
+
+summary(sem_log)
+```
 
 
 
