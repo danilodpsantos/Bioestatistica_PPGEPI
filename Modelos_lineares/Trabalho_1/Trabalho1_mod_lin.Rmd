@@ -20,7 +20,8 @@ As questões a seguir referem-se ao estudo de Gross et al (1999) sobre a relaç�
 # install.packages("ggplot2")
 #install.packages("RColorBrewer")
 #install.packages("ellipse")
-install.packages("car")
+#install.packages("car")
+#install.packages("faraway")
 
 library("haven")
 library("ggplot2")
@@ -29,6 +30,9 @@ library("tidyverse")
 library("RColorBrewer")
 library("ellipse")
 library("car")
+library("mctest")
+library("faraway")
+library (MASS)
 ```
 
 
@@ -41,6 +45,9 @@ dados <- read_spss(file = "3.ex.Funding.sav")
 
 __a) Explore a relação entre dollars e as outras variáveis independentes (exceto disease e id).__ 
 
+
+Verificando a correlação entre as variáveis:
+
 ```{r correlation_var_outcome}
 
 #Crio um objeto com as variáveis que quero correlacionar
@@ -52,6 +59,8 @@ cor_matrix <- cor(my_data, use = "complete.obs")
 #arredondo para duas casas decimais
 round(cor_matrix,2)
 ```
+
+Observamos que, em geral, as variáveis estão fracamente correlacionadas com o desfecho. A exceção é yrlost, que está um pouco mais correlacionada.
 
 ```{r correlation_plot}
 #Painel de 100 cores e matriz de correlação ordenada
@@ -66,19 +75,11 @@ plotcorr(cor_matrix_ord, col = my_colors[cor_matrix_ord*50+50], mar = c(1, 1, 1,
 
 ```
 
-```{r distribution_incid}
+Na matriz de correlação acima, quanto mais "estreita" (em elipse) a esfera e mais próximo de verde-escuro, maior a correlação.
 
-#acho que seria melhor mostrar a distribuição da incidência, como é variável contínua
-hist(dados$incid, breaks = 50)
+Abaixo, regressões lineares simples entre o desfecho e cada um dos preditores.
 
-```
-
-```{r distribution_incid_2}
-
-summary(dados$incid)
-
-```
-
+####Incid x dollars
 
 ```{r lm_dol_incid}
 
@@ -91,9 +92,6 @@ summary(lm_dol_incid)
 ```
 
 ```{r scat_dol_incid}
-
-
-
 
 scat_dol_incid <- ggplot(dados, aes(x = incid, y = dollars)) +
                                  geom_point() +
@@ -109,11 +107,7 @@ scat_dol_incid <- ggplot(dados, aes(x = incid, y = dollars)) +
 scat_dol_incid
 ```
 
-```{r distribution_preval}
-
-hist(dados$preval, breaks = 50)
-summary(dados$preval)
-```
+####Preval x dollars
 
 ```{r lm_dol_preval}
 
@@ -140,16 +134,9 @@ scat_dol_preval <- ggplot(dados, aes(x = incid, y = dollars)) +
 
 scat_dol_preval
 
-
 ```
 
-```{r distribution_mort}
-
-hist(dados$mort, breaks = 50)
-summary(dados$mort)
-
-```
-
+####Mort x dollars
 
 ```{r lm_dol_mort}
 
@@ -179,12 +166,7 @@ scat_dol_mort
 
 ```
 
-```{r distribution_hospdays}
-
-hist(dados$hospdays, breaks = 50)
-summary(dados$hospdays)
-```
-
+####Hospdays x dollars
 
 ```{r lm_dol_hospdays}
 
@@ -213,12 +195,7 @@ scat_dol_hospdays
 
 ```
 
-```{r distribution_yrslost}
-
-hist(dados$yrslost, breaks = 50)
-
-summary(dados$yrslost)
-```
+####Yrslost x dollars
 
 ```{r lm_dol_yrslost}
 
@@ -247,13 +224,7 @@ scat_dol_yrslost
 
 ```
 
-
-```{r distribution_disabil}
-
-hist(dados$disabil, breaks = 50)
-summary(dados$disabil)
-
-```
+####Disabil x dollars
 
 ```{r lm_dol_disabil}
 
@@ -288,15 +259,9 @@ __b) Construa manualmente um modelo que você julga que melhor explica o desfech
 O objetivo do nosso modelo é explicar quais características estão relacionadas com o investimento dado às doenças pelo NIH.
  
 As variáveis preditoras candidatas estão relacionadas a:
-* 1) quantidade de pessoas acometidas pela doença, 
-* 2) morbidade da doença e 
-* 3) mortalidade da doença. 
-
-grupos de preditores:
-# quantidade de doentes - preval e incid
-# morte causada pela doença - yrslost e mortality
-# morbidade causada pela doença - disabil e hospdays
-
+* 1) quantidade de pessoas acometidas pela doença: prevalência, incidência
+* 2) morbidade da doença: yrslost, mortality
+* 3) mortalidade da doença: disability, hospdays
 
 Os 3 aspectos, segundo nossa hipótese, poderiam razões que levassem a investimentos maiores em pesquisa (o desfecho) para uma dada doença.
 
@@ -312,11 +277,13 @@ Modelo 2: yrslost + disabil + incid
 
 Como sabemos que disabil inclui yrslost, poderíamos comparar yrslost com seu complementar, YLD (disabil - yrslost)
 
-Modelo 3: yrslost + YLD + preval
-Modelo 3: yrslost + YLD + incid
+Modelo 3a: yrslost + YLD + preval
+Modelo 3b: yrslost + YLD + incid
 
 
-Métodos backward, forward e stepwise não nos parecem adequados, devido à alta correlação entre os preditores, indicando colinearidade.
+Métodos backward, forward e stepwise não parecem adequados, devido à alta correlação entre os preditores, indicando colinearidade.
+
+Modelo 1:
 
 ```{r modelo1}
 
@@ -327,6 +294,17 @@ summary(modelo1)
 
 ```
 
+VIF modelo 1: 
+
+```{r modelo1_vif}
+
+vif(modelo1)
+
+```
+
+No modelo 1, nenhum dos preditores se encontra significativamente associado ao desfecho, apesar do VIF para cada um dos preditores não ser alto.
+
+Modelo 2:
 ```{r modelo2}
 
 modelo2 <- lm(formula = dollars ~ incid + yrslost + disabil,
@@ -336,6 +314,18 @@ summary(modelo2)
 
 ```
 
+VIF modelo 2:
+
+```{r modelo2_vif}
+
+vif(modelo2)
+
+```
+
+No modelo 2, nenhum dos preditores se encontra significativamente associado ao desfecho, apesar do VIF para cada um dos preditores não ser alto.
+
+
+Modelo 3a:
 ```{r modelo3a}
 dados$YLD <- dados$disabil - dados$yrslost
 
@@ -345,6 +335,8 @@ modelo3a <- lm(formula = dollars ~ preval + yrslost + YLD,
 summary(modelo3a)
 
 ```
+
+Modelo 3b:
 
 ```{r modelo3b}
 dados$YLD <- dados$disabil - dados$yrslost
@@ -356,28 +348,27 @@ summary(modelo3b)
 
 ```
 
+Nos modelos 3a e 3b, também não foi encontrada significância estatística entre os preditores e o desfecho. 
 
 __c) Faça o gráfico dos valores preditos versus os resíduos studentizados. Interprete os resultados.__
 
-```{r residuos_student_qq}
-
-car::qqPlot(modelo1, main = "QQ Plot")
-
-```
 
 ```{r residuos_student_hist}
-library (MASS)
 
 sres <- studres(modelo1)
 
 hist(sres, freq=FALSE, 
    main="Distribution of Studentized Residuals")
 
+
+```
+```{r residuos_student_2}
+
 spreadLevelPlot(modelo1)
 
 ```
 
-
+São poucos pontos no gráfico, mas parece que a suposição de homogeneidade de variância do desfecho não foi violada.
 
 
 
@@ -385,34 +376,8 @@ spreadLevelPlot(modelo1)
 
 __a. Transforme todas as variáveis utilizadas na questão 1 em logaritmo natural. Utilize o método stepwise para selecionar os preditores.__
 
-http://www.sthda.com/english/articles/37-model-selection-essentials-in-r/154-stepwise-regression-essentials-in-r/
 
-
-```{r full_model}
-
-# Preparando modelo com todas as variáveis a serem avaliadas
-modelo_full <- lm(data = dados, log(dollars) ~ log(incid) + log(preval) + log(hospdays) + log(mort) + log(yrslost) + log(disabil) + log(YLD))
- 
-# Conferindo resultado deste modelo                 
-summary(modelo_full)
-
-# Método stepwise de seleção de variáveis:
-
-step.model <- stepAIC(modelo_full, direction = "both", trace = TRUE)
-
-
-# Resumo do modelo final
-summary(step.model)
-
-```
-```{r avalia_stepwise}
-
-plot(step.model)
-
-
-```
-
-Não consegui explicar direito, achei melhor nem escrever :/
+Começo pelo preditor de maior significância estatística, yrslost
 
 ```{r stepwise_mrm_1}
 
@@ -424,6 +389,8 @@ stepwise_mrm_1 <- lm(data = dados, formula = (log(dollars) ~ log(yrslost)))
 summary(stepwise_mrm_1)
 ```
 
+Adiciono disabil
+
 ```{r stepwise_mrm_2}
 
 #adiciono disabil
@@ -434,46 +401,57 @@ stepwise_mrm_2 <- lm(data = dados, formula = (log(dollars) ~ log(yrslost) + log(
 summary(stepwise_mrm_2)
 ```
 
+Testo incid
+
 ```{r stepwise_mrm_3}
 
 #troco disabil por incid
 
-stepwise_mrm_3 <- lm(data = dados, formula = (log(dollars) ~ log(disabil) + log(incid)))
+stepwise_mrm_3 <- lm(data = dados, formula = (log(dollars) ~ log(yrslost) + log(incid)))
   
 
 summary(stepwise_mrm_3)
 ```
 
+Testo mort
+
 ```{r stepwise_mrm_4}
 
 #mort
 
-stepwise_mrm_4 <- lm(data = dados, formula = (log(dollars) ~ log(disabil) + log(mort)))
+stepwise_mrm_4 <- lm(data = dados, formula = (log(dollars) ~ log(yrslost) + log(mort)))
   
 
 summary(stepwise_mrm_4)
 ```
 
+Testo hospdays
+
 ```{r stepwise_mrm_5}
 
 #hospdays
 
-stepwise_mrm_5 <- lm(data = dados, formula = (log(dollars) ~ log(disabil) + log(hospdays)))
+stepwise_mrm_5 <- lm(data = dados, formula = (log(dollars) ~ log(yrslost) + log(hospdays)))
   
 
 summary(stepwise_mrm_5)
 ```
+
+Testo preval. Mantenho esse, por dar a maior explicação ao desfecho
 
 ```{r stepwise_mrm_6}
 
 #preval
 #mantenho esse, por dar a maior explicação ao desfecho
 
-stepwise_mrm_6 <- lm(data = dados, formula = (log(dollars) ~ log(disabil) + log(hospdays) + log(preval)))
+stepwise_mrm_6 <- lm(data = dados, formula = (log(dollars) ~ log(yrslost) + log(preval))
   
 
 summary(stepwise_mrm_6)
+
 ```
+
+Incluo ao modelo a segunda melhor explicativa, hospdays
 
 ```{r stepwise_mrm_7}
 
@@ -488,7 +466,7 @@ summary(stepwise_mrm_7)
 
 __b. Faça um resumo dos passos que o algoritmo tomou.__
 
-O modelo foi iniciado pelo preditor de maior significância estatística, yrslost. Em seguida, foi testada a explicação do desfecho em modelo com esse preditor e cada um dos outros, escolhendo o de maior R2 ajustado (yrslost + preval). Como permaneceram no modelo um preditor da categoria "morte" e outro da categoria "proporção de casos na população", resta apenas um que indique "morbidade". 
+O modelo foi iniciado pelo preditor de maior significância estatística, yrslost. Em seguida, foi testada a explicação do desfecho em modelo com esse preditor e cada um dos outros, escolhendo o de maior R2 ajustado (yrslost + preval). Como permaneceram no modelo um preditor da categoria "morte" e outro da categoria "proporção de casos na população", resta apenas um que indique "morbidade". Para isso, escolho hospdays, que traz boa explicação ao modelo.
 
 
 __c. Faça o gráfico dos valores preditos versus os resíduos studentizados para o modelo final.__
@@ -498,44 +476,32 @@ __c. Faça o gráfico dos valores preditos versus os resíduos studentizados par
 spreadLevelPlot(stepwise_mrm_7)
 ```
 
-```{r stepwise_predicted_studentized}
-
-#acho que tem outro jeito de fazer também, plotando em um gráfico os dados salvos nos objetos abaixo
-
-dados$predicted <- predict(stepwise_mrm_7)
-dados$studentized <- rstudent(stepwise_mrm_7)
-  
-```
-
-
 
 __d. Compare com a resposta da questão 1.__
 
-O modelo transformando as variáveis com log apresenta maior explicação do desfecho que o modelo sem transformação, como pode ser visto abaixo.
+O modelo com log apresenta uma variável significativamente associada ao desfecho, além de apresentar melhor ajuste.
 
-```{r stepwise_semlog}
-
-#o certo seria comparar com o nosso modelo 
-
-sem_log <- lm(data = dados, formula = (dollars ~ yrslost + preval + hospdays))
-  
-
-summary(sem_log)
-```
 
 3. Para o modelo final da questão 2, faça o diagnóstico completo avaliando as suposições sobre os resíduos, multicolinearidade e observações influentes. Interprete os resultados.
 
-```{r residuos}
+```{r resíduos}
 
-#1- suposição de que os resíduos seguem uma distribuição normal
-#QQplot: plota quartis do resíduo versus quartis de uma distribuição normal
+plot(stepwise_mrm_7)
 
-sem_log <- lm(data = dados, formula = (dollars ~ yrslost + preval + hospdays))
-  
-
-summary(sem_log)
 ```
 
+Gráfico 1: avalia a suposição de homogeneidade de variância do desfecho. O esperado seria ver uma nuvem simetricamente espalhada ao longo do eixo zero, sem padrão. No entanto, não é o que o gráfico aparenta. Assim, acreditamos que essa suposição possa estar sendo violada.
+
+Gráfico 2: QQ-plot para avaliar suposição de que os resíduos seguem uma distribuição normal.
+Observando o gráfico, parece que a maioria dos pontos estão próximos da reta, com exceção dos pontos próximos das caudas.
+
+Gráfico 4: observações influentes. Difícil interpretação.
+
+```{r resíduos}
+
+plot(stepwise_mrm_7)
+
+```
 
 
 
