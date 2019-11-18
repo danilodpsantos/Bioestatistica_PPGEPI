@@ -371,7 +371,6 @@ spreadLevelPlot(modelo1)
 São poucos pontos no gráfico, mas parece que a suposição de homogeneidade de variância do desfecho não foi violada.
 
 
-
 2. 
 
 __a. Transforme todas as variáveis utilizadas na questão 1 em logaritmo natural. Utilize o método stepwise para selecionar os preditores.__
@@ -497,12 +496,13 @@ Observando o gráfico, parece que a maioria dos pontos estão próximos da reta,
 
 Gráfico 4: observações influentes. Difícil interpretação.
 
-```{r resíduos}
+```{r resíduos_vif}
 
-plot(stepwise_mrm_7)
+vif(stepwise_mrm_7)
 
 ```
 
+Multicolinearidade aparentemente pouco preocupante analisando o vif de cada um dos preditores.
 
 
 __4. Faça a regressão entre log(dollars) versus log(disabil) e log(hospdays). Interprete os resultados.__
@@ -536,7 +536,7 @@ newdata <- data.frame(disabil = 100000,
 
 predict(mrm_log, newdata, interval = "confidence")
 ```
-Será que aqui não devemos usar o intervalo de predição no lugar do intervalo de confiança? Acho que o de confiança é na questão de baixo e o de predição é aqui :)
+
 
 Média de R$ 13,21 (em milhares), ou seja, 13.210 dólares, com IC de 12.269 a 14.154.
 
@@ -582,6 +582,7 @@ qqPlot(dummy_res)
 spreadLevelPlot(mod_dummy_hospdays)
 
 ```
+
 ```{r confint_dummy}
 
 confint(mod_dummy_hospdays)
