@@ -1,0 +1,300 @@
+---
+title: "Avaliação dados binários"
+author: "Gabriela Wünsch Lopes"
+date: "17/11/2019"
+output: html_document
+---
+
+```{r instalando_pacotes, include=FALSE}
+#library("compareGroups")
+library("ggplot2")
+library(readr)
+library("haven")
+library("ggpubr")
+library("dplyr")
+library("knitr")
+install.packages("ResourceSelection")
+library("ResourceSelection")
+```
+
+```{r carregando_banco, include=FALSE}
+dcv <- read_sas("~/Documents/UFRGS/MD-PhD/CADEIRAS/DADOS BINÁRIOS/Materiais moodle/avaliação/dcv_311019.sas7bdat", 
+    NULL)
+```
+
+```{r reconhecendo_categoricas, include=FALSE}
+#função para que o R reconheça que as variáveis são categóricas
+dcv$dcv <- factor(dcv$dcv)
+dcv$tabagismo <- factor (dcv$tabagismo)
+dcv$sexo <- factor(dcv$sexo)
+```
+
+```{r criando_cat, message=FALSE, warning=FALSE}
+
+#criando variável categórica IMC_cat a partir da variável contínua imc
+
+dcv$imc_cat <- ifelse(dcv$imc < 18.5, "Abaixo do peso", 
+                          ifelse(dcv$imc >= 18.5 & dcv$imc <= 25, "Eutrofia", 
+                                 ifelse(dcv$imc > 25 & dcv$imc <= 30, "Sobrepeso", 
+                                        ifelse(dcv$imc > 30, "Obesidade", NA)))) 
+
+dcv$imc_cat <- factor(dcv$imc_cat)
+
+dcv$imc_cat <- relevel(dcv$imc_cat, ref = 2)
+
+#criando variável categórica pas_cat a partir da variável contínua pas
+
+dcv$pas_cat <- ifelse(dcv$pas < 120, "Normal", 
+                          ifelse(dcv$pas >= 120 & dcv$pas <= 129, "Elevada", 
+                                 ifelse(dcv$pas >= 130 & dcv$pas <= 139, "Hipertensão grau 1", 
+                                        ifelse(dcv$pas >=140, "Hipertensão grau 2", NA)))) 
+
+
+#criando variável categórica colesterol_cat a partir da variável contínua colesterol
+
+dcv$colesterol_cat <- ifelse(dcv$colesterol < 6.2, "< 6.2 mmol/L",
+                       ifelse(dcv$colesterol >= 6.2, "≥ 6.2 mmol/L", NA))
+
+#nomes
+
+dcv$dcv.n <- ifelse(dcv$dcv == 1, "Sem DCV",
+                       ifelse(dcv$dcv == 2, "Com DCV", NA))
+
+#nomes
+
+dcv$sexo.n <- ifelse(dcv$sexo == 1, "Mulheres",
+                       ifelse(dcv$sexo == 2, "Homens", NA))
+
+#ver dados da variável categórica
+t_dcv <- table(dcv$dcv, exclude = NULL) 
+addmargins(t_dcv)
+
+t_imc <- table(dcv$imc_cat, exclude = NULL) 
+addmargins(t_imc)
+
+t_col <- table(dcv$colesterol_cat, exclude = NULL) 
+addmargins(t_col)
+
+
+t_sexo <- table(dcv$sexo, exclude = NULL) 
+addmargins(t_sexo)
+
+dcv$pas_cat <- factor(dcv$pas_cat)
+```
+
+#Descritivas
+
+```{r descr_pas, message=FALSE, warning=FALSE}
+
+PAS <- dcv$pas
+hist(PAS)
+```
+
+```{r descr_pas_cat, message=FALSE, warning=FALSE}
+
+#ver quantas obs de cada categoria
+t_pas <- table(dcv$pas_cat, exclude = NULL)
+addmargins(t_pas)
+
+#ver percentuais de cada categoria
+round(100*prop.table(t_pas), digits=2)
+```
+
+```{r cross_tabulations, message=FALSE, warning=FALSE}
+#ver como cada categoria se distribui dentro do desfecho
+
+#em frequência número
+dcv_por_categoria_imc <- table(dcv$imc_cat, dcv$dcv, exclude = NULL)
+dcv_por_categoria_imc
+
+#em porcentagens
+#margin = 1 significa que teremos as frequências de cada coluna (dm) em cada linha (imc). margin = 2 é o contrário 
+round(100 * prop.table(dcv_por_categoria_imc, margin = 2), digits = 0)
+
+
+#dcv e sexo
+dcv_por_sexo <- table(dcv$dcv.n, dcv$sexo.n, exclude=NULL)
+
+round(100*prop.table(dcv_por_sexo, margin = 2), digits = 1)
+
+#dcv e PAS
+dcv_por_pas <- table(dcv$dcv.n, dcv$pas_cat, exclude=NULL)
+
+round(100*prop.table(dcv_por_pas, margin = 2), digits = 1)
+```
+
+__1) Escrever os objetivos do estudo.__
+
+
+
+__2) Fazer uma análise descritiva, organizando os resultados em uma tabela (Tabela 1)__
+
+
+
+__3) Obter estimativa não ajustada da associação entre a exposição e a incidencia de DCV.__
+
+
+```{r modelo_não_ajustado, include=FALSE}
+
+#DCV e PAS categorizada
+
+dcv$pas_cat <- relevel(dcv$pas_cat, ref = 4)
+dcv$dcv <- relevel(dcv$dcv, ref = 1) #defino a categoria de referência como "Não", para me certificar de que estou modelando a chance de ter DCV
+
+non_adj <- glm(dcv$dcv ~ dcv$pas_cat, family=binomial (link=logit))
+
+summary(non_adj)
+```
+
+Aqui, estou modelando o log odds de ter doença cardiovascular para indivíduos com pressão arterial sistólica elevada, hipertensão grau 1 e hipertensão grau 2, em relação a indivíduos com pressão arterial normal. Para transformar log odds ratio em medida mais fácil de interpretar, pode-se exponenciar o log odds ratio para obter odds ratio.
+
+```{r exp_manualmente, include=FALSE}
+
+#exponenciando manualmente o log odds ratio
+exp(non_adj$coefficients)
+
+```
+
+Em relação
+
+
+
+```{r modelo_não_ajustado2, include=FALSE}
+
+#DCV e PAS contínua
+
+non_adj2 <- glm(dcv$dcv ~ dcv$pas, family=binomial (link=logit))
+
+summary(non_adj2)
+```
+
+Aqui, estou modelando o log odds de ter doença cardiovascular conforme a pressão arterial sistólica. Se a pressão arterial sistólica for zero, só há o intercepto. Esse não é um valor de pressão arterial possível, por isso, o intercepto não é interpretável. 
+
+O coeficiente para idade é o aumento no log odds de ter doença cardiovascular para o aumento de 1mmHg na pressão arterial. 
+
+```{r relacao_linear2, include=FALSE}
+
+#verificar se há uma relação linear entre o preditor e o log odds do desfecho (ter dcv)
+
+# create a cross tabulation of pas and dcv status  
+dcv_por_pas <- table(dcv$pas, dcv$dcv) 
+ 
+# output the frequencies of dcv status by pas
+freq_table <- prop.table(dcv_por_pas, margin = 1) 
+ 
+# calculate the odds of having dcv 
+odds <- freq_table[ , 2]/freq_table[ , 1]
+ 
+# calculate the log odds 
+logodds <- log(odds) 
+ 
+# plot the ages found in the sample against the log odds of having diabetes 
+plot(rownames(freq_table), logodds) 
+```
+
+
+Supomos uma relação linear entre pressão arterial e log odds, conforme gráfico acima. Assim, o log odds de ter doença cardiovascular para quem tem PAS de 131 é 0.023 (2.3%) maior que o log odds de quem tem PAS de 130, assim como o log odds de ter doença cardiovascular para quem tem PAS de 141 é 0.023 (2.3%) maior que o log odds de quem tem PAS de 140.
+
+```{r exp_manualmente2, include=FALSE}
+
+#exponenciando manualmente o log odds ratio
+exp(non_adj2$coefficients)
+
+```
+
+Exponenciando o log odds, obtemos o odds ratio, que é a razão entre a chance de ter doença cardiovascular para quem tem PAS de 131 dividida pela chance de doença cardiovascular para quem tem PAS de 130, o mesmo ocorre para PAS de 141 em relação a 140. Ou seja, é o quanto as chances do desfecho aumentam quando a pressão arterial aumenta em uma unidade (1mmHg). Portanto, em termos de doença cardiovascular, o aumento da pressão arterial é prejudicial, conforme esperado pela hipótese teórica.
+Em outras palavras, a pressão arterial é um preditor estatisticamente significativo de doença cardiovascular.
+
+#Linearidade dos outros preditores
+
+```{r linearidade_sexo, include=FALSE}
+
+# cross tabulation 
+dcv_by_gender <- table(dcv$sexo.n, dcv$dcv) # not including NA values because there aren't that many 
+ 
+# proportion of diabetes status by gender 
+dcv_by_gender_prop <- prop.table(dcv_by_gender, margin = 1) 
+ 
+# calculate the odds of having diabetes by gender 
+odds_gender <- dcv_by_gender_prop[, 2]/dcv_by_gender_prop[, 1] 
+ 
+# calculate the log odds 
+logodds_gender <- log(odds_gender) 
+ 
+# plot the log odds of having diabetes by gender 
+dotchart(logodds_gender)
+
+```
+
+```{r linearidade_imc_cat, include=FALSE}
+
+# cross tabulation 
+dcv_by_bmi <- table(dcv$imc_cat, dcv$dcv) 
+ 
+# proportion of diabetes status by gender 
+dcv_by_bmi_prop <- prop.table(dcv_by_bmi, margin = 1) 
+ 
+# calculate the odds of having diabetes by gender 
+odds_bmi <- dcv_by_bmi_prop[, 2]/dcv_by_bmi_prop[, 1] 
+ 
+odds <- freq_table[ , 2]/freq_table[ , 1]
+# calculate the log odds 
+logodds_bmi <- log(odds_bmi) 
+ 
+# plot the log odds of having diabetes by gender 
+dotchart(logodds_imc)
+
+```
+
+```{r linearidade_imc, include=FALSE}
+
+# cross tabulation 
+dcv_by_imc <- table(dcv$imc, dcv$dcv) 
+ 
+# proportion of diabetes status by gender 
+freq_imc <- prop.table(dcv_by_imc, margin = 1) 
+ 
+# calculate the odds of having diabetes by gender 
+odds_imc <- freq_imc[, 2]/freq_imc[, 1] 
+ 
+# calculate the log odds 
+logodds_imc <- log(odds_imc) 
+ 
+# plot the log odds of having diabetes by gender 
+plot(rownames(freq_imc), logodds_imc)
+
+
+
+```
+
+__4) Obter estimativa(s) ajustada(s) para a associação entre a exposição e a incidencia de DCV. Os resultados dos itens (3) e (4) podem ser organizados em uma tabela (Tabela 2).__
+
+```{r modelo_ajustado1, include=FALSE}
+
+contrasts(dcv$sexo) #referência são mulheres (categoria 0), ok
+
+
+ajust_1 <- glm(dcv$dcv ~ dcv$pas_cat + dcv$sexo + dcv$imc + dcv$idade + dcv$colesterol_cat, family=binomial (link=logit))
+
+summary(ajust_1)
+```
+
+Erro padrão altíssimo para categoria baixo peso. Incluir baixo e eutrofia.
+
+__5) Avaliar o atendimento das suposições do(s) modelo(s)__
+
+#Desfecho binário
+#Linearidade entre cada um dos preditores e log odds do desfecho
+
+
+```{r ajuste_hosmer_lemeshow, include=FALSE}
+
+# run Hosmer-Lemeshow test 
+HL <- hoslem.test(x = ajust_1$y, y = fitted(ajust_1), g = 10) 
+HL
+```
+
+__6) Escrever um resumo estruturado, contendo as seções: Título, Introdução, Objetivos, Métodos,Resultados e Conclusões (máximo uma página: fonte=2, espaçamento=1,5 linhas)__
+
+
+
