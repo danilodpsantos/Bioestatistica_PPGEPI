@@ -1,0 +1,673 @@
+---
+title: "Trabalho 1 Modelos Lineares"
+author: "Gabriela Wüsch Lopes e Danilo de Paula Santos"
+date: "10/18/2019"
+output:
+  word_document: default
+  html_document:
+    theme: paper
+editor_options:
+  chunk_output_type: inline
+---
+
+As questões a seguir referem-se ao estudo de Gross et al (1999) sobre a relação entre financiamento pelo National Institutes of Health e carga de 29 doenças. Os dados da Tabela 1 desde estudo estão no arquivo 3.ex.Funding.sav. Os nomes das variáveis e definições neste arquivo são:
+
+!["variaveis"](variaveis_gross.PNG)
+
+
+```{r preparing_R, message=FALSE, warning=FALSE}
+
+# install.packages("haven")
+# install.packages("ggplot2")
+#install.packages("RColorBrewer")
+# install.packages("ellipse")
+# #install.packages("car")
+# #install.packages("faraway")
+# install.packages("mctest")
+install.packages("caret")
+#install.packages("tidyverse")
+
+library("caret")
+library("haven")
+library("ggplot2")
+library("tidyverse")
+library("RColorBrewer")
+library("ellipse")
+library("car")
+library("mctest")
+library("faraway")
+library ("MASS")
+```
+
+
+```{r dados}
+  dados <- read_spss(file = "3.ex.Funding.sav")
+
+```
+
+1. 
+
+__a) Explore a relação entre dollars e as outras variáveis independentes (exceto disease e id).__ 
+
+
+Verificando a correlação entre as variáveis:
+
+```{r correlation_var_outcome}
+
+#Crio um objeto com as variáveis que quero correlacionar
+my_data <- dados[,c("dollars", "incid", "preval", "mort", "hospdays", "yrslost", "disabil")]
+
+#aplico a função de correlação, ignorando os valores missing (complete.obs)
+cor_matrix <- cor(my_data, use = "complete.obs")
+
+#arredondo para duas casas decimais
+round(cor_matrix,2)
+```
+
+Observamos que, em geral, as variáveis estão fracamente correlacionadas com o desfecho. A exceção é yrlost, que está um pouco mais correlacionada.
+
+```{r correlation_plot}
+#Painel de 100 cores e matriz de correlação ordenada
+
+my_colors <- brewer.pal(5, "Spectral")
+my_colors <- colorRampPalette(my_colors)(100)
+
+ord <- order (cor_matrix[1, ])
+cor_matrix_ord <- cor_matrix[ord, ord]
+
+plotcorr(cor_matrix_ord, col = my_colors[cor_matrix_ord*50+50], mar = c(1, 1, 1, 1))
+
+```
+
+Na matriz de correlação acima, quanto mais "estreita" (em elipse) a esfera e mais próximo de verde-escuro, maior a correlação.
+
+Abaixo, regressões lineares simples entre o desfecho e cada um dos preditores.
+
+####Incid x dollars
+
+```{r lm_dol_incid}
+
+lm_dol_incid <- lm(formula = dollars ~ incid,
+                    data = dados)
+
+summary(lm_dol_incid)
+
+
+```
+
+```{r scat_dol_incid}
+
+scat_dol_incid <- ggplot(dados, aes(x = incid, y = dollars)) +
+                                 geom_point() +
+                                 scale_x_continuous("Incidence per 1000") +
+                                 scale_y_continuous("thousands of NIH research dollars") +
+                                 theme_minimal()
+scat_dol_incid
+```
+
+####Preval x dollars
+
+```{r lm_dol_preval}
+
+lm_dol_preval <- lm(formula = dollars ~ preval,
+                    data = dados)
+
+summary(lm_dol_preval)
+
+
+```
+
+```{r scat_dol_preval}
+
+scat_dol_preval <- ggplot(dados, aes(x = incid, y = dollars)) +
+                                 geom_point() +
+                                 scale_x_continuous("Incidence per 1000") +
+                                 scale_y_continuous("thousands of NIH research dollars") +
+                                 theme_minimal() 
+scat_dol_preval
+
+```
+
+####Mort x dollars
+
+```{r lm_dol_mort}
+
+lm_dol_mort <- lm(formula = dollars ~ mort,
+                    data = dados)
+
+summary(lm_dol_mort)
+
+
+```
+
+```{r scat_dol_mort}
+
+scat_dol_mort <- ggplot(dados, aes(x = mort, y = dollars)) +
+                                 geom_point() +
+                                 scale_x_continuous("Mortality per 1000") +
+                                 scale_y_continuous("thousands of NIH research dollars") +
+                                 theme_minimal()
+
+scat_dol_mort
+
+
+```
+
+####Hospdays x dollars
+
+```{r lm_dol_hospdays}
+
+lm_dol_hospdays <- lm(formula = dollars ~ hospdays,
+                    data = dados)
+
+summary(lm_dol_hospdays)
+
+```
+
+```{r scat_dol_hospdays}
+
+scat_dol_hospdays <- ggplot(dados, aes(x = hospdays, y = dollars)) +
+                                 geom_point() +
+                                 scale_x_continuous("Thousands of hospital days") +
+                                 scale_y_continuous("thousands of NIH research dollars") +
+                                 theme_minimal() 
+scat_dol_hospdays
+
+
+```
+
+####Yrslost x dollars
+
+```{r lm_dol_yrslost}
+
+lm_dol_yrslost <- lm(formula = dollars ~ yrslost,
+                    data = dados)
+
+summary(lm_dol_yrslost)
+
+```
+
+```{r scat_dol_yrslost}
+
+scat_dol_yrslost <- ggplot(dados, aes(x = yrslost, y = dollars)) +
+                                 geom_point() +
+                                 scale_x_continuous("Thousands of years of life lost") +
+                                 scale_y_continuous("thousands of NIH research dollars") +
+                                 theme_minimal()
+
+scat_dol_yrslost
+
+
+```
+
+####Disabil x dollars
+
+```{r lm_dol_disabil}
+
+lm_dol_disabil <- lm(formula = dollars ~ disabil,
+                    data = dados)
+
+summary(lm_dol_disabil)
+
+```
+
+```{r scat_dol_disabil}
+
+scat_dol_disabil <- ggplot(dados, aes(x = disabil, y = dollars)) +
+                                 geom_point() +
+                                 scale_x_continuous("Thousands of disability-adjusted life years") +
+                                 scale_y_continuous("thousands of NIH research dollars") +
+                                 theme_minimal() 
+scat_dol_disabil
+
+```
+
+
+
+__b) Construa manualmente um modelo que você julga que melhor explica o desfecho.__ 
+
+O objetivo do nosso modelo é explicar quais características estão relacionadas com o investimento dado às doenças pelo NIH.
+ 
+
+Modelo 1:
+
+A primeira variável que escolhemos para entrar no modelo foi a variável yrslost, por ter o p valor < 0.2
+O Próximo passo será testar todas as variáveis em modelos que incluam yrslost.
+
+```{r modelo_yrs1}
+
+modelo_yrs1 <- lm(formula = dollars ~ yrslost + incid,
+                    data = dados)
+
+summary(modelo_yrs1)
+
+```
+
+```{r modelo_yrs2}
+
+modelo_yrs2 <- lm(formula = dollars ~ yrslost + preval,
+                    data = dados)
+
+summary(modelo_yrs2)
+
+```
+
+```{r modelo_yrs3}
+
+modelo_yrs3 <- lm(formula = dollars ~ yrslost + mort,
+                    data = dados)
+
+summary(modelo_yrs3)
+
+```
+
+```{r modelo_yrs4}
+
+modelo_yrs4 <- lm(formula = dollars ~ yrslost + hospdays,
+                    data = dados)
+
+summary(modelo_yrs4)
+
+```
+
+```{r modelo_yrs5}
+
+modelo_yrs5 <- lm(formula = dollars ~ yrslost + disabil,
+                    data = dados)
+
+summary(modelo_yrs5)
+
+```
+
+A segunda variável a ser incluída será a variável referente a dias de hospitalização (hopdays), que foi significativa (considerando um limiar de 0.2) e melhorou explicação da variabilidade. 
+
+
+```{r modelo_yrs_hospdays1}
+
+modelo_yrs_hospdays1 <- lm(formula = dollars ~ yrslost + hospdays + incid,
+                    data = dados)
+
+summary(modelo_yrs_hospdays1)
+
+```
+
+```{r modelo_yrs_hospdays2}
+
+modelo_yrs_hospdays2 <- lm(formula = dollars ~ yrslost + hospdays + preval,
+                    data = dados)
+
+summary(modelo_yrs_hospdays2)
+
+```
+
+```{r modelo_yrs_hospdays3}
+
+modelo_yrs_hospdays3 <- lm(formula = dollars ~ yrslost + hospdays + mort,
+                    data = dados)
+
+summary(modelo_yrs_hospdays3)
+
+```
+
+```{r modelo_yrs_hospdays4}
+
+modelo_yrs_hospdays4 <- lm(formula = dollars ~ yrslost + hospdays + disabil,
+                    data = dados)
+
+summary(modelo_yrs_hospdays4)
+
+```
+
+
+Nenhuma outra variável foi significativa usando o limiar de 0.2 nem melhorou a explicação da variabilidade do modelo.
+O modelo escolhido foi o modelo que inclui as variáveis yrslost e hospdays. Agora vamos fazer o diagnóstico do modelo.
+
+__c) Faça o gráfico dos valores preditos versus os resíduos studentizados. Interprete os resultados.__
+
+
+```{r residuos_student_2}
+
+plot(modelo_yrs4)
+
+```
+
+Gráfico 1: avalia a linearidade e homocedasticidade entre preditores e desfecho. Uma linha horizontal, sem concentração de pontos ou assimetria de distribuição, indica uma relação linear. Um padrão de distribuição em funil indicaria violação de homocedasticidade.
+
+Apesar da maioria dos pontos se encontrarem próximos ao 0, formando uma "linha", algumas observações fogem deste padrão. As doenças 1, 10 e 11 parecem ser "outliers". 
+
+Gráfico 2: QQ-plot para avaliar suposição de que os resíduos seguem uma distribuição normal.
+
+O Padrão de distribuição no QQ plot parece ser próximo ao normal, no entanto a doença 1 continua se destacando dos demais pontos.
+
+
+Gráfico 3: Usado para avaliar homogeneidade de variância do desfecho. O esperado seria ver uma linha horizontal com nuvem de pontos. No entanto, fora o ponto 1 e o ponto 10 a distribuição parece seguir uma linha. 
+
+Gráfico 4: Usado para avaliar observações influentes. "Standardized residuals", nesse gráfico, são plotados os resíduos padronizados. Para avaliação de pontos influentes devemos considerar a combinação dos resíduos com o leverage, por meio da distância de Cook. O único ponto que se encontra mais de 4 desvios-padrão em relação aos demais. Além disso, esse resíduo ultrapassa os limites da distância de Cook (linha vermelha pontilhada), ou seja e é uma observação influente para os coeficientes de regressão estimados.
+
+__a. Transforme todas as variáveis utilizadas na questão 1 em logaritmo natural. Utilize o método stepwise para selecionar os preditores.__
+__b. Faça um resumo dos passos que o algoritmo tomou.__
+
+Decidimos usar p valor de entrada p < 0.05 e de saída > 0.10
+
+#### Log Incid x dollars
+
+```{r log_dol_incid}
+
+log_dol_incid <- lm(formula = log(dollars) ~ log(incid),
+                    data = dados)
+
+summary(log_dol_incid)
+
+
+```
+
+#### Log Preval x dollars
+
+```{r log_dol_preval}
+
+log_dol_preval <- lm(formula = log(dollars) ~ log(preval),
+                    data = dados)
+
+summary(log_dol_preval)
+
+
+```
+
+
+#### Log Mort x dollars
+
+```{r log_dol_mort}
+
+log_dol_mort <- lm(formula = log(dollars) ~ log(mort),
+                    data = dados)
+
+summary(log_dol_mort)
+
+
+```
+
+#### Log Hospdays  x dollars
+
+```{r log_dol_hospdays}
+
+log_dol_hospdays <- lm(formula = log(dollars) ~ log(hospdays),
+                    data = dados)
+
+summary(log_dol_hospdays)
+
+
+```
+
+
+#### Log yrslost  x dollars
+
+```{r log_dol_yrslost}
+
+log_dol_yrslost <- lm(formula = log(dollars) ~ log(yrslost),
+                    data = dados)
+
+summary(log_dol_yrslost)
+
+
+```
+
+#### Log Disabil  x dollars
+
+```{r log_dol_disabil}
+
+log_dol_disabil <- lm(formula = log(dollars) ~ log(disabil),
+                    data = dados)
+
+summary(log_dol_disabil)
+
+
+```
+
+
+A primeira variável escolhida foi disabil, pois é a vairável com o menor valor P
+
+Vamos à escolha da segunda variável
+
+
+```{r log_dol_disabil1}
+
+log_dol_disabil1 <- lm(formula = log(dollars) ~ log(disabil) + log(incid),
+                    data = dados)
+
+summary(log_dol_disabil1)
+
+
+```
+
+```{r log_dol_disabil2}
+
+log_dol_disabil2 <- lm(formula = log(dollars) ~ log(disabil) + log(preval),
+                    data = dados)
+
+summary(log_dol_disabil2)
+
+
+```
+
+
+```{r log_dol_disabil3}
+
+log_dol_disabil3 <- lm(formula = log(dollars) ~ log(disabil) + log(mort),
+                    data = dados)
+
+summary(log_dol_disabil3)
+
+
+```
+
+```{r log_dol_disabil4}
+
+log_dol_disabil4 <- lm(formula = log(dollars) ~ log(disabil) + log(hospdays),
+                    data = dados)
+
+summary(log_dol_disabil4)
+
+
+```
+
+```{r log_dol_disabil5}
+
+log_dol_disabil5 <- lm(formula = log(dollars) ~ log(disabil) + log(yrslost),
+                    data = dados)
+
+summary(log_dol_disabil5)
+
+
+```
+
+
+A segunda variável de entrada foi Hospdays, pois foi a variável com maior significância.
+
+```{r log_dol_disabil_hospdays1}
+
+log_dol_disabil_hospdays1 <- lm(formula = log(dollars) ~ log(disabil) + log(hospdays) + log(incid),
+                    data = dados)
+
+summary(log_dol_disabil_hospdays1)
+
+
+```
+
+```{r log_dol_disabil_hospdays2}
+
+log_dol_disabil_hospdays2 <- lm(formula = log(dollars) ~ log(disabil) + log(hospdays) + log(preval),
+                    data = dados)
+
+summary(log_dol_disabil_hospdays2)
+
+
+```
+
+```{r log_dol_disabil_hospdays3}
+
+log_dol_disabil_hospdays3 <- lm(formula = log(dollars) ~ log(disabil) + log(hospdays) + log(mort),
+                    data = dados)
+
+summary(log_dol_disabil_hospdays3)
+
+
+```
+
+
+
+```{r log_dol_disabil_hospdays4}
+
+log_dol_disabil_hospdays4 <- lm(formula = log(dollars) ~ log(disabil) + log(hospdays) + log(yrslost),
+                    data = dados)
+
+summary(log_dol_disabil_hospdays4)
+
+
+```
+
+Nosso modelo final foi o modelo em que as variáveis log(disabil), log(hospdays) entravam como variáveis explicativas.
+
+
+
+```{r step_wise}
+
+
+modelo_step <- lm(data = na.omit(dados), log(dollars) ~ log(disabil) + log(preval) + log(incid) + log(mort) + log(hospdays) + log(yrslost))
+
+res_step <-step(modelo_step, direction =  "both")
+
+```
+
+
+
+__c. Faça o gráfico dos valores preditos versus os resíduos studentizados para o modelo final.__
+
+```{r stepwise_predicted_studentized}
+  
+plot(stepwise_mrm_7, 5)
+```
+
+
+__d. Compare com a resposta da questão 1.__
+
+O modelo com log apresenta uma variável significativamente associada ao desfecho, além de apresentar melhor ajuste (proporção de variabilidade do desfecho explicada pelo modelo é maior).
+
+
+__3. Para o modelo final da questão 2, faça o diagnóstico completo avaliando as suposições sobre os resíduos, multicolinearidade e observações influentes. Interprete os resultados.__
+
+```{r resíduos}
+
+plot(stepwise_mrm_7)
+
+```
+
+Gráfico 1: avalia a linearidade entre preditores e desfecho. Uma linha horizontal, sem padrões, indica uma relação linear. A linha vermelha não parece se comportar de modo linear em torno do zero, violando essa suposição.
+
+Gráfico 2: QQ-plot para avaliar suposição de que os resíduos seguem uma distribuição normal.
+Observando o gráfico, parece que a maioria dos pontos estão próximos da reta, com exceção dos pontos próximos das caudas.
+
+Gráfico 3: Usado para avaliar homogeneidade de variância do desfecho. O esperado seria ver uma linha horizontal com nuvem de pontos simetricamente espalhada. No entanto, não é o que o gráfico aparenta. Assim, acreditamos que essa suposição possa estar sendo violada.
+
+Gráfico 4: Usado para avaliar observações influentes. "Standardized residuals", nesse gráfico, são os resíduos studentizados. O resíduo da observação 1 excede 3 desvios-padrão. Além disso, esse resíduo se encontra além da linha da distância de Cook (linha vermelha pontilhada), ou seja, apresenta uma grande distância de Cook e é um valor influente para os coeficientes de regressão estimados.
+
+```{r resíduos_vif}
+
+vif(stepwise_mrm_7)
+
+```
+
+Multicolinearidade aparentemente pouco preocupante analisando o vif de cada um dos preditores (VIF menor que 5)
+
+
+__4. Faça a regressão entre log(dollars) versus log(disabil) e log(hospdays). Interprete os resultados.__
+
+```{r mrm_log}
+
+mrm_log <- lm(data = dados, formula = (log(dollars) ~ log(disabil) + log(hospdays)))
+  
+
+summary(mrm_log)
+
+confint(mrm_log)
+```
+
+Segundo o modelo apresentado, a cada variação de um ponto no log de disabil, ocorre aumento de 0.90 (IC = 0.6-1.21) no log de dollars e a cada aumento de um ponto no log de hospdays ocorre uma diminuição de 0,52 (IC = -0.81 a -0.0225) log de dollars. 
+
+5. 
+__a.Utilizando o modelo da questão 4, qual é a estimativa da quantidade média de fundos de pesquisa orçados para doenças que causam 1 milhão de dias de hospitalização em um ano e a perda de 1 milhão de anos de vida ajustados por incapacida de?Calcule o intervalo de 95% de confiança para este valor__
+
+```{r coef_q4}
+
+coef(mrm_log)
+```
+
+__Fundos = 8.74 + 0.91 Disab - 0.52 HospDays__
+
+```{r confidence_interval}
+
+newdata <- data.frame(disabil = 100000,
+                      hospdays = 100000)
+
+predict(mrm_log, newdata, interval = "confidence")
+```
+
+
+Média de R$ 13,21 (em milhares), ou seja, 13.210 dólares, com IC de 12.269 a 14.154.
+
+
+__b.Também calcule o IC 95% para um financiamento que seria fornecido a uma nova doença que causa 1 milhão de dias de hospitalização em um ano e a perda de 1 milhão de anos de vida ajustados por incapacidade.__
+
+
+```{r prediction_interval}
+
+predict(mrm_log, newdata, interval = "prediction")
+```
+
+Média de 13.210 dólares, com IC de 11.433 a 14.990 dólares
+
+__6. Crie uma variável dummy que assume valor 1 se hospdays >= 1000 e 0 caso contrário. Faça a regressão entre log(dollars) versus log(disabil) e a variável dummy. Interprete os resultados, escrevendo as equações para cada categoria da variável dummy. Teste se é necessário incluir uma interação no modelo.__
+
+```{r dummy_hospdays}
+
+dados$dummy_hospdays <- ifelse(dados$hospdays >= 1000, 1,
+                               ifelse(is.na(dados$hospdays), NA,0))
+
+```
+
+```{r model_dummy_hospdays}
+
+mod_dummy_hospdays <- lm(data = dados, formula = (log(dollars) ~ log(disabil) + dummy_hospdays))
+
+summary(mod_dummy_hospdays)
+```
+
+```{r hist res model_dummy}
+dummy_res <- studres(mod_dummy_hospdays)
+
+hist(dummy_res, freq=FALSE, 
+   main="Distribution of Studentized Residuals")
+```
+
+```{r qq res model_dummy}
+qqPlot(dummy_res)
+```
+
+
+```{r student res model_dummy}
+
+plot(mod_dummy_hospdays, 5)
+
+```
+
+```{r confint_dummy}
+
+confint(mod_dummy_hospdays)
+
+```
+
+
+O modelo que inclui a variável dummy explica 65% da variabilidade de log de dollars, sendo que a cada aumento de 1 ponto de log de disabil ocorre aumento de 0.77 (IC 0.54 a 0.99) log de dollars, e para doenças que gerem a partir de 1000 dias de internação, o investimento em pesquisa cai 1.40 (IC -2.07 a -0.73)log de dollars.
+
+Não foi testada a interação.
+
+
