@@ -71,6 +71,10 @@ dados_dm$quadril_cm <- dados_dm$hip * 2.54
 
 dados_dm$taxa_hdl <- 1/dados_dm$ratio
 
+dados_dm$imc <- dados_dm$peso_kg / I((dados_dm$altura_cm/100) ^2)
+
+dados_dm$rcq <- dados_dm$cintura_cm/dados_dm$quadril_cm
+
 ```
 
 Criando uma variável de status de diabetes: 
@@ -92,7 +96,7 @@ Níveis séricos mais altos de colesterol HDL se associam com um melhor controle
 
 ```{r descritivas}
 
-compare_dm <- compareGroups(data = dados_dm, ~ gender + age + diabetes + glyhb + chol + hdl + bp.1s + bp.1d + taxa_hdl + peso_kg + altura_cm + cintura_cm + quadril_cm )
+compare_dm <- compareGroups(data = dados_dm,  ~ gender + age + diabetes + glyhb + chol + hdl + bp.1s + + taxa_hdl + imc + rcq )
 
 tabela_dm <- createTable(compare_dm )
 
@@ -101,3 +105,145 @@ export2md(tabela_dm)
 ```
 
 
+```{r plots}
+
+
+plot(tabela_dm)
+
+```
+
+Avaliação da linearidade da relação entre colesterol HDL e hemoglobina glicada:
+
+``` {r scatter_hdl}
+
+scatter_hdl <- ggplot(dados_dm, aes(x = hdl, y = log(glyhb))) +
+                                 geom_point() +
+                                 scale_x_continuous("colesterol HDL (mg/dl)") +
+                                 scale_y_continuous("hemoglobina glicada (%)") +
+                                 theme_minimal() +
+                                 geom_smooth(method = "lm")
+scatter_hdl
+
+```
+
+# Modelo inicial, apenas com HDL:
+
+```{r lm_hdl}
+
+
+lm_hdl <- lm(formula = (glyhb) ~ hdl,
+                    data = dados_dm)
+
+summary(lm_hdl)
+
+```
+
+## Montando um novo modelo, agora com ajuste para outras variáveis
+
+* Nosso método de modelagem será o stepwise baseado R2 ajustado. 
+
+Incluindo idade e sexo, variáveis que serão mantidas no modelo independentemente de significância estatística: 
+
+```{r lm_hdl1}
+
+
+lm_hdl1 <- lm(formula = glyhb ~ hdl + age + gender,
+                    data = dados_dm)
+
+summary(lm_hdl1)
+
+```
+
+```{r lm_hdl2}
+
+
+lm_hdl2 <- lm(formula = glyhb ~ hdl + age + gender + imc,
+                    data = dados_dm)
+
+summary(lm_hdl2)
+
+```
+
+
+```{r lm_hdl3}
+
+
+lm_hdl3 <- lm(formula = glyhb ~ hdl + age + gender + chol,
+                    data = dados_dm)
+
+summary(lm_hdl3)
+
+```
+
+
+```{r lm_hdl4}
+
+lm_hdl4 <- lm(formula = glyhb ~ hdl + age + gender + rcq,
+                    data = dados_dm)
+
+summary(lm_hdl4)
+
+```
+
+A quarta variável a ser incluída será o cloesterol total.
+
+```{r lm_hdl_chol1}
+
+
+lm_hdl_chol1 <- lm(formula = glyhb ~ hdl + age + gender + chol + imc,
+                    data = dados_dm)
+
+summary(lm_hdl_chol1)
+
+```
+
+```{r lm_hdl_chol2}
+
+
+lm_hdl_chol2 <- lm(formula = glyhb ~ hdl + age + gender + chol + rcq,
+                    data = dados_dm)
+
+summary(lm_hdl_chol2)
+
+```
+
+O IMC é a quinta variável a ser incluída
+
+
+```{r lm_hdl_chol_imc1}
+
+
+lm_hdl_chol_imc1 <- lm(formula = glyhb ~ hdl + age + gender + chol + imc + rcq ,
+                    data = dados_dm)
+
+summary(lm_hdl_chol_imc1)
+
+```
+
+O modelo final seria o modelo ajustado para idade, sexo, colesterol total, imc e razão cintura-quadril. 
+Agora vamos fazer a avaliação deste modelo:
+
+
+```{r residuos_lm}
+
+plot(lm_hdl_chol_imc1)
+
+```
+
+Vamos tentar fazer a transformação do desfecho para log:
+
+```{r lm_hdl_loghb}
+
+
+lm_hdl_loghb <- lm(formula = log(glyhb) ~ hdl + age + gender + chol + imc + rcq + diabetes,
+                    data = dados_dm)
+
+summary(lm_hdl_loghb)
+
+```
+
+```{r res_loghb}
+
+plot(lm_hdl_loghb)
+
+```
