@@ -1,0 +1,103 @@
+---
+title: "Modelos Lineares PPGEPI"
+author: "Gabriela Wünsch Lopes e Danilo de Paula Santos"
+date: "02/12/2019"
+output: word_document
+---
+
+#Instruções:
+
+Cada dupla deverá escolher uma base de dados, que pode ser analisado via modelos lineares (um desfecho quantitativo e no mínimo dois preditores). 
+
+Proceder a análise descritiva, modelagem e análise de diagnóstico.
+Preparar o parágrafo da análise estatística conforme seria necessário para a seção de Métodos para um artigo. 
+
+Construir as tabelas e/ou figuras, e escrever as interpretações, como para uma sessão de Resultados de um artigo. 
+
+Preparar uma apresentação de 15 minutos para dia 06/12.
+
+Postar o arquivo em Word, a apresentação e os dados em SPSS/XLS/CSV. 
+Referir a fonte dos dados.
+
+``` {r config}
+
+# install.packages("ggplot2")
+# install.packages("car")
+# install.packages("tidyverse")
+# install.packages("mctest")
+
+
+library("ggplot2")
+library("car")
+library("tidyverse")
+library("mctest")
+library("compareGroups")
+```
+
+
+# Descrição do banco:
+
+## Diabetes Dataset:
+
+These data are courtesy of Dr John Schorling, Department of Medicine, University of Virginia School of Medicine.
+The data consist of 19 variables on 403 subjects from 1046 subjects who were interviewed in a study to understand the prevalence of obesity, diabetes, and other cardiovascular risk factors in central Virginia for African Americans. According to Dr John Hong, Diabetes Mellitus Type II (adult onset diabetes) is associated most strongly with obesity. The waist/hip ratio may be a predictor in diabetes and heart disease. DM II is also agssociated with hypertension - they may both be part of "Syndrome X". The 403 subjects were the ones who were actually screened for diabetes. Glycosolated hemoglobin > 7.0 is usually taken as a positive diagnosis of diabetes. For more information about this study see
+
+Willems JP, Saunders JT, DE Hunt, JB Schorling: Prevalence of coronary heart disease risk factors among rural blacks: A community-based study. Southern Medical Journal 90:814-820; 1997
+
+and
+
+Schorling JB, Roach J, Siegel M, Baturka N, Hunt DE, Guterbock TM, Stewart HL: A trial of church-based smoking cessation interventions for rural African Americans. Preventive Medicine 26:92-101; 1997.
+
+
+
+## Documentação banco:
+
+
+!["Documentação banco"](documenta_banco.PNG)
+
+``` {r datasets}
+
+dados_dm <- read.csv("diabetes.csv")
+
+# convertendo as medidas do sistema imperial para o métrico:
+
+dados_dm$peso_kg <- dados_dm$weight * 0.453592
+
+dados_dm$altura_cm <- dados_dm$height * 2.54
+
+dados_dm$cintura_cm <- dados_dm$waist  * 2.54
+
+dados_dm$quadril_cm <- dados_dm$hip * 2.54
+
+dados_dm$taxa_hdl <- 1/dados_dm$ratio
+
+```
+
+Criando uma variável de status de diabetes: 
+
+0 = Não diabético 
+1 = Diabético
+
+```{r status_dm}
+
+dados_dm$diabetes <- factor(ifelse(is.na(dados_dm$glyhb), NA,
+                            ifelse(dados_dm$glyhb >= 6.5, 1, 0)))
+
+
+```
+
+# Hipótese:
+
+Níveis séricos mais altos de colesterol HDL se associam com um melhor controle glicêmico.
+
+```{r descritivas}
+
+compare_dm <- compareGroups(data = dados_dm, ~ gender + age + diabetes + glyhb + chol + hdl + bp.1s + bp.1d + taxa_hdl + peso_kg + altura_cm + cintura_cm + quadril_cm )
+
+tabela_dm <- createTable(compare_dm )
+
+export2md(tabela_dm)
+
+```
+
+
