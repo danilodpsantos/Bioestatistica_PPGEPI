@@ -77,26 +77,12 @@ dados_dm$rcq <- dados_dm$cintura_cm/dados_dm$quadril_cm
 
 ```
 
-Criando uma variável de status de diabetes: 
-
-0 = Não diabético 
-1 = Diabético
-
-```{r status_dm}
-
-dados_dm$diabetes <- factor(ifelse(is.na(dados_dm$glyhb), NA,
-                            ifelse(dados_dm$glyhb >= 6.5, 1, 0)))
-
-
-```
-
 # Hipótese:
 
 Níveis séricos mais altos de colesterol HDL se associam com um melhor controle glicêmico.
 
 ```{r descritivas}
-
-compare_dm <- compareGroups(data = dados_dm,  ~ gender + age + diabetes + glyhb + chol + hdl + bp.1s + + taxa_hdl + imc + rcq )
+compare_dm <- compareGroups(data = dados_dm,  ~ gender + age + glyhb + chol + hdl + bp.1s + + taxa_hdl + imc + rcq )
 
 tabela_dm <- createTable(compare_dm )
 
@@ -116,27 +102,189 @@ Avaliação da linearidade da relação entre colesterol HDL e hemoglobina glica
 
 ``` {r scatter_hdl}
 
-scatter_hdl <- ggplot(dados_dm, aes(x = hdl, y = log(glyhb))) +
+scatter_hdl <- ggplot(dados_dm, aes(x = hdl, y = glyhb)) +
                                  geom_point() +
                                  scale_x_continuous("colesterol HDL (mg/dl)") +
                                  scale_y_continuous("hemoglobina glicada (%)") +
-                                 theme_minimal() +
-                                 geom_smooth(method = "lm")
+                                 theme_minimal() 
 scatter_hdl
 
 ```
 
-# Modelo inicial, apenas com HDL:
+# Explorando as relações das variáveis explicativas com a variável resposta:
 
 ```{r lm_hdl}
 
 
-lm_hdl <- lm(formula = (glyhb) ~ hdl,
+lm_hdl <- lm(formula = glyhb ~ hdl,
                     data = dados_dm)
 
 summary(lm_hdl)
 
 ```
+
+
+``` {r scatter_imc}
+
+scatter_imc <- ggplot(dados_dm, aes(x = imc, y = glyhb)) +
+                                 geom_point() +
+                                 scale_x_continuous("IMC (km/m2)") +
+                                 scale_y_continuous("hemoglobina glicada (%)") +
+                                 theme_minimal() 
+scatter_imc
+
+```
+
+
+```{r lm_imc}
+
+lm_imc <- lm(formula = glyhb ~ imc,
+                    data = dados_dm)
+
+summary(lm_imc)
+
+```
+
+
+``` {r scatter_age}
+
+scatter_age <- ggplot(dados_dm, aes(x = age, y = glyhb) )+
+                                 geom_point() +
+                                 scale_x_continuous("Idade (anos)") +
+                                 scale_y_continuous("hemoglobina glicada (%)") 
+
+scatter_age
+                      
+                      
+```
+
+
+```{r lm_age}
+
+lm_age <- lm(formula = glyhb ~ age,
+                    data = dados_dm)
+
+summary(lm_age)
+
+```
+
+``` {r scatter_chol}
+
+scatter_chol <- ggplot(dados_dm, aes(x = chol, y = glyhb)) +
+                                 geom_point() +
+                                 scale_x_continuous("Colesterol total") +
+                                 scale_y_continuous("hemoglobina glicada (%)") +
+                                 theme_minimal() 
+scatter_chol
+
+```
+
+
+```{r lm_chol}
+
+lm_chol <- lm(formula = glyhb ~ chol,
+                    data = dados_dm)
+
+summary(lm_chol)
+
+```
+
+``` {r scatter_rcq}
+
+scatter_rcq <- ggplot(dados_dm, aes(x = rcq, y = glyhb)) +
+                                 geom_point() +
+                                 scale_x_continuous("Razão cintura/quadril") +
+                                 scale_y_continuous("hemoglobina glicada (%)") +
+                                 theme_minimal() 
+scatter_rcq
+
+```
+
+
+```{r lm_rcq}
+
+lm_rcq <- lm(formula = glyhb ~ rcq,
+                    data = dados_dm)
+
+summary(lm_rcq)
+
+```
+
+
+``` {r scatter_chol_hdl}
+
+scatter_chol_hdl <- ggplot(dados_dm, aes(x = chol, y = hdl)) +
+                                 geom_point() +
+                                 scale_x_continuous("Colesterol total") +
+                                 scale_y_continuous("Colesterol HDL") +
+                                 theme_minimal() 
+scatter_chol_hdl
+
+```
+
+
+```{r lm_chol_hdl}
+
+lm_chol_hdl <- lm(formula = hdl ~ chol,
+                    data = dados_dm)
+
+summary(lm_chol_hdl)
+
+```
+
+``` {r scatter_taxa_hdl}
+
+scatter_taxa_hdl <- ggplot(dados_dm, aes(x = taxa_hdl, y = glyhb)) +
+                                 geom_point() +
+                                 scale_x_continuous("Colesterol total") +
+                                 scale_y_continuous("Colesterol HDL") +
+                                 theme_minimal() 
+scatter_taxa_hdl
+
+```
+
+
+```{r lm_taxa_hdl}
+
+lm_taxa_hdl <- lm(formula = glyhb ~ taxa_hdl,
+                    data = dados_dm)
+
+summary(lm_taxa_hdl)
+
+```
+
+
+Para avaliara a existência de interação entre o nível de colesterol total, o colesterol HDL e o nível de hemoglobina glicada, vamos categorizar a variável colesterol total em:
+
+colesterol alto (>= 200)  = 1
+colesterol normal (< 200) = 0
+
+
+```{r status_chol}
+
+dados_dm$status_chol <- factor(
+                                ifelse(is.na(dados_dm$chol) == TRUE, NA,ifelse(dados_dm$chol >= 200, 1, 0)))
+
+table(dados_dm$status_chol)
+
+
+```
+
+
+Gráfico para avaliação da interação:
+
+``` {r scatter_interação_chol}
+
+scatter_taxa_hdl <- ggplot(dados_dm, aes(x = hdl, y = glyhb, color = status_chol)) +
+                                 geom_point() +
+                                 scale_x_continuous("Colesterol total") +
+                                 scale_y_continuous("Colesterol HDL") +
+                                 theme_minimal() +
+                                 geom_smooth(method = "lm")
+scatter_taxa_hdl
+
+```
+
 
 ## Montando um novo modelo, agora com ajuste para outras variáveis
 
@@ -213,7 +361,7 @@ O IMC é a quinta variável a ser incluída
 ```{r lm_hdl_chol_imc1}
 
 
-lm_hdl_chol_imc1 <- lm(formula = glyhb ~ hdl + age + gender + chol + imc + rcq ,
+lm_hdl_chol_imc1 <- lm(formula = glyhb ~ hdl + age + gender + chol + imc + rcq + hdl*chol,
                     data = dados_dm)
 
 summary(lm_hdl_chol_imc1)
@@ -235,15 +383,29 @@ Vamos tentar fazer a transformação do desfecho para log:
 ```{r lm_hdl_loghb}
 
 
-lm_hdl_loghb <- lm(formula = log(glyhb) ~ hdl + age + gender + chol + imc + rcq + diabetes,
+lm_hdl_loghb <- lm(formula = log(glyhb) ~ hdl + age + gender + chol + imc + rcq,
                     data = dados_dm)
 
 summary(lm_hdl_loghb)
 
 ```
 
+
+```{r lm_hdl_loghb2}
+
+
+lm_hdl_loghb <- lm(formula = log(glyhb) ~ hdl + age + gender + chol + imc + rcq,
+                    data = dados_dm)
+
+summary(lm_hdl_loghb)
+
+```
+
+
 ```{r res_loghb}
 
 plot(lm_hdl_loghb)
 
 ```
+
+
