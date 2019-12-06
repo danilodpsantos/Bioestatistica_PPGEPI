@@ -75,16 +75,27 @@ dados_dm$imc <- dados_dm$peso_kg / I((dados_dm$altura_cm/100) ^2)
 
 dados_dm$rcq <- dados_dm$cintura_cm/dados_dm$quadril_cm
 
+
+# Filtrando o banco para pacientes não diabéticos
+
+dados_dm <- dados_dm %>%
+            filter(glyhb >= 4.008) %>% 
+            filter(glyhb <= 6.5) %>%
+            filter(is.na(glyhb) == FALSE)
+
+
 ```
+
 
 # Hipótese:
 
-Níveis séricos mais altos de colesterol HDL se associam com um melhor controle glicêmico.
+Níveis séricos mais altos de colesterol HDL se associam com um melhor controle glicêmico em pessoas não diabéticas.
 
 ```{r descritivas}
-compare_dm <- compareGroups(data = dados_dm,  ~ gender + age + glyhb + chol + hdl + bp.1s + + taxa_hdl + imc + rcq )
 
-tabela_dm <- createTable(compare_dm )
+compare_dm <- compareGroups(data = dados_dm,  ~ gender + age + glyhb + chol + hdl + taxa_hdl+ bp.1s + + taxa_hdl + imc + rcq )
+
+tabela_dm <- createTable(compare_dm)
 
 export2md(tabela_dm)
 
@@ -100,26 +111,25 @@ plot(tabela_dm)
 
 Avaliação da linearidade da relação entre colesterol HDL e hemoglobina glicada:
 
-``` {r scatter_hdl}
+# Explorando as relações das variáveis explicativas com a variável resposta:
 
-scatter_hdl <- ggplot(dados_dm, aes(x = hdl, y = glyhb)) +
+``` {r scatter_taxa_hdl}
+
+scatter_taxa_hdl <- ggplot(dados_dm, aes(x = I(taxa_hdl*100), y = glyhb)) +
                                  geom_point() +
-                                 scale_x_continuous("colesterol HDL (mg/dl)") +
-                                 scale_y_continuous("hemoglobina glicada (%)") +
+                                 scale_x_continuous("Taxa de colesterol hdl") +
+                                 scale_y_continuous("Hemoglobina glicada (%)") +
                                  theme_minimal() 
-scatter_hdl
+scatter_taxa_hdl
 
 ```
 
-# Explorando as relações das variáveis explicativas com a variável resposta:
+```{r lm_taxa_hdl}
 
-```{r lm_hdl}
-
-
-lm_hdl <- lm(formula = glyhb ~ hdl,
+lm_taxa_hdl <- lm(formula = glyhb ~ I(taxa_hdl*100),
                     data = dados_dm)
 
-summary(lm_hdl)
+summary(lm_taxa_hdl)
 
 ```
 
@@ -168,27 +178,6 @@ summary(lm_age)
 
 ```
 
-``` {r scatter_chol}
-
-scatter_chol <- ggplot(dados_dm, aes(x = chol, y = glyhb)) +
-                                 geom_point() +
-                                 scale_x_continuous("Colesterol total") +
-                                 scale_y_continuous("hemoglobina glicada (%)") +
-                                 theme_minimal() 
-scatter_chol
-
-```
-
-
-```{r lm_chol}
-
-lm_chol <- lm(formula = glyhb ~ chol,
-                    data = dados_dm)
-
-summary(lm_chol)
-
-```
-
 ``` {r scatter_rcq}
 
 scatter_rcq <- ggplot(dados_dm, aes(x = rcq, y = glyhb)) +
@@ -211,79 +200,28 @@ summary(lm_rcq)
 ```
 
 
-``` {r scatter_chol_hdl}
 
-scatter_chol_hdl <- ggplot(dados_dm, aes(x = chol, y = hdl)) +
+
+``` {r scatter_bp}
+
+scatter_bp <- ggplot(dados_dm, aes(x = bp.1s, y = glyhb)) +
                                  geom_point() +
-                                 scale_x_continuous("Colesterol total") +
-                                 scale_y_continuous("Colesterol HDL") +
+                                 scale_x_continuous("Razão cintura/quadril") +
+                                 scale_y_continuous("hemoglobina glicada (%)") +
                                  theme_minimal() 
-scatter_chol_hdl
+scatter_bp
 
 ```
 
+```{r lm_bp}
 
-```{r lm_chol_hdl}
-
-lm_chol_hdl <- lm(formula = hdl ~ chol,
+lm_bp <- lm(formula = glyhb ~ bp.1s,
                     data = dados_dm)
 
-summary(lm_chol_hdl)
+summary(lm_bp)
 
 ```
 
-``` {r scatter_taxa_hdl}
-
-scatter_taxa_hdl <- ggplot(dados_dm, aes(x = taxa_hdl, y = glyhb)) +
-                                 geom_point() +
-                                 scale_x_continuous("Colesterol total") +
-                                 scale_y_continuous("Colesterol HDL") +
-                                 theme_minimal() 
-scatter_taxa_hdl
-
-```
-
-
-```{r lm_taxa_hdl}
-
-lm_taxa_hdl <- lm(formula = glyhb ~ taxa_hdl,
-                    data = dados_dm)
-
-summary(lm_taxa_hdl)
-
-```
-
-
-Para avaliara a existência de interação entre o nível de colesterol total, o colesterol HDL e o nível de hemoglobina glicada, vamos categorizar a variável colesterol total em:
-
-colesterol alto (>= 200)  = 1
-colesterol normal (< 200) = 0
-
-
-```{r status_chol}
-
-dados_dm$status_chol <- factor(
-                                ifelse(is.na(dados_dm$chol) == TRUE, NA,ifelse(dados_dm$chol >= 200, 1, 0)))
-
-table(dados_dm$status_chol)
-
-
-```
-
-
-Gráfico para avaliação da interação:
-
-``` {r scatter_interação_chol}
-
-scatter_taxa_hdl <- ggplot(dados_dm, aes(x = hdl, y = glyhb, color = status_chol)) +
-                                 geom_point() +
-                                 scale_x_continuous("Colesterol total") +
-                                 scale_y_continuous("Colesterol HDL") +
-                                 theme_minimal() +
-                                 geom_smooth(method = "lm")
-scatter_taxa_hdl
-
-```
 
 
 ## Montando um novo modelo, agora com ajuste para outras variáveis
@@ -292,120 +230,143 @@ scatter_taxa_hdl
 
 Incluindo idade e sexo, variáveis que serão mantidas no modelo independentemente de significância estatística: 
 
-```{r lm_hdl1}
+```{r lm_taxa_hdl1}
 
-
-lm_hdl1 <- lm(formula = glyhb ~ hdl + age + gender,
+lm_taxa_hdl1 <- lm(formula = glyhb ~ I(taxa_hdl*100) + age  ,
                     data = dados_dm)
 
-summary(lm_hdl1)
+summary(lm_taxa_hdl1)
 
 ```
 
-```{r lm_hdl2}
+```{r lm_taxa_hdl2}
 
-
-lm_hdl2 <- lm(formula = glyhb ~ hdl + age + gender + imc,
+lm_taxa_hdl2 <- lm(formula = glyhb ~ I(taxa_hdl*100) + gender  ,
                     data = dados_dm)
 
-summary(lm_hdl2)
+summary(lm_taxa_hdl2)
 
 ```
 
+```{r lm_taxa_hdl3}
 
-```{r lm_hdl3}
-
-
-lm_hdl3 <- lm(formula = glyhb ~ hdl + age + gender + chol,
+lm_taxa_hdl3 <- lm(formula = glyhb ~ I(taxa_hdl*100) + imc  ,
                     data = dados_dm)
 
-summary(lm_hdl3)
+summary(lm_taxa_hdl3)
 
 ```
 
+```{r lm_taxa_hdl4}
 
-```{r lm_hdl4}
-
-lm_hdl4 <- lm(formula = glyhb ~ hdl + age + gender + rcq,
+lm_taxa_hdl4 <- lm(formula = glyhb ~ I(taxa_hdl*100) + rcq,
                     data = dados_dm)
 
-summary(lm_hdl4)
+summary(lm_taxa_hdl4)
 
 ```
 
-A quarta variável a ser incluída será o cloesterol total.
 
-```{r lm_hdl_chol1}
+```{r lm_taxa_hdl5}
 
-
-lm_hdl_chol1 <- lm(formula = glyhb ~ hdl + age + gender + chol + imc,
+lm_taxa_hdl5 <- lm(formula = glyhb ~ I(taxa_hdl*100) + bp.1s,
                     data = dados_dm)
 
-summary(lm_hdl_chol1)
+summary(lm_taxa_hdl5)
 
 ```
 
-```{r lm_hdl_chol2}
 
+A primeira variável a ser incluída no modelo será a idade. Adjusted R-squared:  0.1033 
 
-lm_hdl_chol2 <- lm(formula = glyhb ~ hdl + age + gender + chol + rcq,
+Agrora vamos testar a inclusão  das outras variáveis no modelo que inclui idade:
+
+```{r lm_taxa_hdl_age1}
+
+lm_taxa_hdl_age1 <- lm(formula = glyhb ~ I(taxa_hdl*100) + age + gender  ,
                     data = dados_dm)
 
-summary(lm_hdl_chol2)
+summary(lm_taxa_hdl_age1)
 
 ```
 
-O IMC é a quinta variável a ser incluída
+```{r lm_taxa_hdl_age2}
 
-
-```{r lm_hdl_chol_imc1}
-
-
-lm_hdl_chol_imc1 <- lm(formula = glyhb ~ hdl + age + gender + chol + imc + rcq + hdl*chol,
+lm_taxa_hdl_age2 <- lm(formula = glyhb ~ I(taxa_hdl*100) + age + imc  ,
                     data = dados_dm)
 
-summary(lm_hdl_chol_imc1)
+summary(lm_taxa_hdl_age2)
 
 ```
 
-O modelo final seria o modelo ajustado para idade, sexo, colesterol total, imc e razão cintura-quadril. 
-Agora vamos fazer a avaliação deste modelo:
 
+```{r lm_taxa_hdl_age3}
 
-```{r residuos_lm}
-
-plot(lm_hdl_chol_imc1)
-
-```
-
-Vamos tentar fazer a transformação do desfecho para log:
-
-```{r lm_hdl_loghb}
-
-
-lm_hdl_loghb <- lm(formula = log(glyhb) ~ hdl + age + gender + chol + imc + rcq,
+lm_taxa_hdl_age3 <- lm(formula = glyhb ~ I(taxa_hdl*100) + age + rcq ,
                     data = dados_dm)
 
-summary(lm_hdl_loghb)
+summary(lm_taxa_hdl_age3)
 
 ```
 
 
-```{r lm_hdl_loghb2}
+```{r lm_taxa_hdl_age4}
 
-
-lm_hdl_loghb <- lm(formula = log(glyhb) ~ hdl + age + gender + chol + imc + rcq,
+lm_taxa_hdl_age4 <- lm(formula = glyhb ~ I(taxa_hdl*100) + age + bp.1s  ,
                     data = dados_dm)
 
-summary(lm_hdl_loghb)
+summary(lm_taxa_hdl_age4)
 
 ```
 
 
-```{r res_loghb}
+A segunda variável a ser incluída no modelo será o sexo Adjusted R-squared: Adjusted R-squared:  0.1006 
 
-plot(lm_hdl_loghb)
+```{r lm_taxa_hdl_age_gender1}
+
+lm_taxa_hdl_age_gender1 <- lm(formula = glyhb ~ I(taxa_hdl*100) + age + gender + rcq ,
+                    data = dados_dm)
+
+summary(lm_taxa_hdl_age_gender1)
+
+vif(lm_taxa_hdl_age_gender1)
 
 ```
 
+```{r lm_taxa_hdl_age_gender2}
 
+lm_taxa_hdl_age_gender2 <- lm(formula = glyhb ~ I(taxa_hdl*100) + age + gender + imc ,
+                    data = dados_dm)
+
+summary(lm_taxa_hdl_age_gender2)
+
+vif(lm_taxa_hdl_age_gender2)
+```
+
+```{r lm_taxa_hdl_age_gender3}
+
+lm_taxa_hdl_age_gender3 <- lm(formula = glyhb ~ I(taxa_hdl*100) + age + gender + rcq + imc ,
+                    data = dados_dm)
+
+summary(lm_taxa_hdl_age_gender3)
+
+vif(lm_taxa_hdl_age_gender3)
+
+```
+
+```{r lm_taxa_hdl_age_imc1}
+
+lm_taxa_hdl_age_imc1 <- lm(formula = glyhb ~ I(taxa_hdl*100) + age + rcq + imc ,
+                    data = dados_dm)
+
+summary(lm_taxa_hdl_age_imc1)
+
+vif(lm_taxa_hdl_age_imc1)
+
+```
+
+```{r plot_final}
+
+plot(lm_taxa_hdl_age_imc1)
+
+```
