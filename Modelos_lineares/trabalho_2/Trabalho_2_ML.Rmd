@@ -412,4 +412,4 @@ Gráfico 4: Usado para avaliar observações influentes. "Standardized residuals
 
 # Interpretação do modelo:
 
-Segundo o modelo construído, a porcentagem de colesterol HDL ((colesterol HDL/Colesterol total ) * 100) não teve associação significativa com a os níveis de hemoglobina glicada em indivíduos não diabético e pré diabéticos.
+Segundo o modelo construído, a porcentagem de colesterol HDL ((colesterol HDL/Colesterol total ) * 100) ajustada para idade, razão cintura-quadril e IMC não teve associação significativa com a os níveis de hemoglobina glicada em indivíduos não diabéticos e pré diabéticos.
