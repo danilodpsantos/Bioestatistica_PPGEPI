@@ -89,15 +89,16 @@ dados_dm <- dados_dm %>%
 
 # Hipótese:
 
-Níveis séricos mais altos de colesterol HDL se associam com um melhor controle glicêmico em pessoas não diabéticas.
+
+Uma menor proporção de colesterol HDL dentro do colesterol total (representando um perfil lipídico menos saudável) se associa a um maior risco de desenvolvimento de diabetes em pessoas não diabéticas.
 
 ```{r descritivas}
 
-compare_dm <- compareGroups(data = dados_dm,  ~ gender + age + glyhb + chol + hdl + taxa_hdl+ bp.1s + + taxa_hdl + imc + rcq )
+compare_dm <- compareGroups(data = dados_dm,  ~ gender + age + glyhb + chol + hdl + taxa_hdl+ bp.1s + imc + rcq )
 
-tabela_dm <- createTable(compare_dm)
+tabela_dm <- createTable(x = compare_dm)
 
-export2md(tabela_dm)
+export2md(x = tabela_dm, caption = "Tabela 1 - Características da amostra")
 
 ```
 
@@ -117,7 +118,7 @@ Avaliação da linearidade da relação entre colesterol HDL e hemoglobina glica
 
 scatter_taxa_hdl <- ggplot(dados_dm, aes(x = I(taxa_hdl*100), y = glyhb)) +
                                  geom_point() +
-                                 scale_x_continuous("Taxa de colesterol hdl") +
+                                 scale_x_continuous("Taxa de colesterol hdl (%)") +
                                  scale_y_continuous("Hemoglobina glicada (%)") +
                                  theme_minimal() 
 scatter_taxa_hdl
@@ -161,7 +162,8 @@ summary(lm_imc)
 scatter_age <- ggplot(dados_dm, aes(x = age, y = glyhb) )+
                                  geom_point() +
                                  scale_x_continuous("Idade (anos)") +
-                                 scale_y_continuous("hemoglobina glicada (%)") 
+                                 scale_y_continuous("hemoglobina glicada (%)")  +
+                                 theme_minimal() 
 
 scatter_age
                       
@@ -206,7 +208,7 @@ summary(lm_rcq)
 
 scatter_bp <- ggplot(dados_dm, aes(x = bp.1s, y = glyhb)) +
                                  geom_point() +
-                                 scale_x_continuous("Razão cintura/quadril") +
+                                 scale_x_continuous("Pressão arterial sistólica (mmHg)") +
                                  scale_y_continuous("hemoglobina glicada (%)") +
                                  theme_minimal() 
 scatter_bp
@@ -319,54 +321,95 @@ summary(lm_taxa_hdl_age4)
 
 ```
 
+ A segunda variável a ser incluída será oa razão cintura-quadril.
+ __Adjusted R-squared:  0.1263.__
 
-A segunda variável a ser incluída no modelo será o sexo Adjusted R-squared: Adjusted R-squared:  0.1006 
+O modelo sem rcq explica menos a variância da HbA1c do que o modelo com as duas variáveis.
 
-```{r lm_taxa_hdl_age_gender1}
 
-lm_taxa_hdl_age_gender1 <- lm(formula = glyhb ~ I(taxa_hdl*100) + age + gender + rcq ,
+```{r lm_taxa_hdl_age_rcq1}
+
+lm_taxa_hdl_age_rcq1 <- lm(formula = glyhb ~ I(taxa_hdl*100) + age + rcq + gender ,
                     data = dados_dm)
 
-summary(lm_taxa_hdl_age_gender1)
-
-vif(lm_taxa_hdl_age_gender1)
+summary(lm_taxa_hdl_age_rcq1)
 
 ```
 
-```{r lm_taxa_hdl_age_gender2}
+```{r lm_taxa_hdl_age_rcq2}
 
-lm_taxa_hdl_age_gender2 <- lm(formula = glyhb ~ I(taxa_hdl*100) + age + gender + imc ,
+lm_taxa_hdl_age_rcq2 <- lm(formula = glyhb ~ I(taxa_hdl*100) + age + rcq + imc ,
                     data = dados_dm)
 
-summary(lm_taxa_hdl_age_gender2)
+summary(lm_taxa_hdl_age_rcq2)
 
-vif(lm_taxa_hdl_age_gender2)
 ```
 
-```{r lm_taxa_hdl_age_gender3}
+```{r lm_taxa_hdl_age_rcq3}
 
-lm_taxa_hdl_age_gender3 <- lm(formula = glyhb ~ I(taxa_hdl*100) + age + gender + rcq + imc ,
+lm_taxa_hdl_age_rcq3 <- lm(formula = glyhb ~ I(taxa_hdl*100) + age + rcq +  bp.1s,
                     data = dados_dm)
 
-summary(lm_taxa_hdl_age_gender3)
-
-vif(lm_taxa_hdl_age_gender3)
+summary(lm_taxa_hdl_age_rcq3)
 
 ```
+
+A Terceira variável será o IMC
+__Adjusted R-squared:  0.1335__ 
+
+O modelo sem a variável rcq explica menos a variabilidade do que o modelo com as três variáveis.
+
+Testando o modelo sem age:
+
+```{r lm_taxa_hdl_rcq}
+
+lm_taxa_hdl_rcq <- lm(formula = glyhb ~ I(taxa_hdl*100) + rcq + imc ,
+                    data = dados_dm)
+
+summary(lm_taxa_hdl_rcq)
+
+```
+
+O modelo com explusão da idade também explica menos a variabilidade do que o modelo com todas as variáveis.
 
 ```{r lm_taxa_hdl_age_imc1}
 
-lm_taxa_hdl_age_imc1 <- lm(formula = glyhb ~ I(taxa_hdl*100) + age + rcq + imc ,
+lm_taxa_hdl_age_imc1 <- lm(formula = glyhb ~ I(taxa_hdl*100) + age + rcq + imc + bp.1s,
                     data = dados_dm)
 
 summary(lm_taxa_hdl_age_imc1)
 
-vif(lm_taxa_hdl_age_imc1)
+```
+
+O Modelo testado com as cinco variáveis explica menos a variabilidade do que o modelo com porcentagem de HDL, idade, razão cintura-quadril e IMC, portanto será o modelo escolhido.
+
+Vamos avaliar a existência de multicolinearidade vif para o modelo final:
+```{r vif_final}
+
+vif(lm_taxa_hdl_age_rcq2)
 
 ```
+
+Nenhum dos preditores parece ter o VIF inflado.
+
+Agora vamos fazer o diagnóstico do modelo, por meio da avaliação dos resíduos.
 
 ```{r plot_final}
 
-plot(lm_taxa_hdl_age_imc1)
+plot(lm_taxa_hdl_age_rcq2)
 
 ```
+
+
+Gráfico 1: avalia a linearidade entre preditores e desfecho. Uma linha horizontal, sem padrões, indica uma relação linear. A linha vermelha parece se comportar de modo linear em torno do zero, não violando essa suposição.
+
+Gráfico 2: QQ-plot para avaliar suposição de que os resíduos seguem uma distribuição normal.
+Observando o gráfico, parece que a maioria dos pontos está sobre a reta, com exceção de alguns valores extremos. (a partir do quantil 1.5)
+
+Gráfico 3: Usado para avaliar homogeneidade de variância do desfecho. O esperado seria ver uma linha horizontal com nuvem de pontos simetricamente espalhada. O gráfico mostra uma linha cescente, o que pode indicar uma violação deste pressuposto. No entanto, os pontos parecem estar homogeneamente distribuídos e poucos outliers são observados.
+
+Gráfico 4: Usado para avaliar observações influentes. "Standardized residuals", nesse gráfico, são os resíduos studentizados. Nenhuma observação de resíduo teve uma distância de cook elevada, e apenas 4 observações pareceram estar destoando da nuvem de pontos.
+
+# Interpretação do modelo:
+
+Segundo o modelo construído, a porcentagem de colesterol HDL ((colesterol HDL/Colesterol total ) * 100) não teve associação significativa com a os níveis de hemoglobina glicada em indivíduos não diabético e pré diabéticos.
